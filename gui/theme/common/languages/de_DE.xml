@@ -38,7 +38,7 @@
 		<string name="wipe_btn">Löschen</string>
 		<string name="backup_btn">Sicherungen</string>
 		<string name="restore_btn">Wiederherstellen</string>
-		<string name="mount_btn">Einhängen</string>
+		<string name="mount_btn">Einhängen und MTP</string>
 		<string name="file_manager_btn">Dateien</string>
 		<string name="advanced_btn">Erweitert</string>
 		<string name="reboot_btn">Neustart</string>

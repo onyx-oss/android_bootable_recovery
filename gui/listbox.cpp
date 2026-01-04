@@ -68,6 +68,17 @@ GUIListBox::GUIListBox(xml_node<>* node) : GUIScrollList(node)
 			iconHeight = mIconUnselected->GetHeight();
 		}
 	}
+
+	// [Yacha] Get margin for list items
+	child = FindNode(node, "margin");
+	if (child) {
+		this->mItemPaddingTop = LoadAttrIntScaleY(child, "top", 0);
+		this->mItemPaddingBottom = LoadAttrIntScaleY(child, "bottom", 0);
+		// If only one value provided, use it for both top and bottom
+		if (LoadAttrIntScaleY(child, "size", -1) != -1) {
+			this->mItemPaddingTop = this->mItemPaddingBottom = LoadAttrIntScaleY(child, "size", 0);
+		}
+	}
 	
 	SetMaxIconSize(iconWidth, iconHeight);
 
@@ -187,6 +198,12 @@ GUIListBox::GUIListBox(xml_node<>* node) : GUIScrollList(node)
 		mVisibleItems.push_back(mListItems.size() - 1);
 
 		child = child->next_sibling("listitem");
+	}
+
+	child = FindNode(node, "group");
+	if (child) {
+		groupArrow = LoadAttrImage(child, "arrowresource");
+		groupColor = LoadAttrColor(child, "color", &isGroup);
 	}
 }
 
@@ -412,8 +429,20 @@ void GUIListBox::RenderItem(size_t itemindex, int yPos, bool selected)
 		icon = item.selected ? mIconSelected : mIconUnselected;
 	}
 	const std::string& text = item.displayName;
+	int groupStatus = 0;
+	if (isGroup) {
+		if (itemindex == 0)
+			if (mVisibleItems.size() == 1)
+				groupStatus = 4; // start & end
+			else
+				groupStatus = 1; // start
+		else if (itemindex == mVisibleItems.size() - 1)
+			groupStatus = 3; // end
+		else
+			groupStatus = 2; // body
+	}
 
-	RenderStdItem(yPos, selected, icon, text.c_str());
+	RenderStdItem(yPos, selected, icon, text.c_str(), NULL, groupStatus);
 }
 
 void GUIListBox::NotifySelect(size_t item_selected)

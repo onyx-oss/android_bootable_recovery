@@ -38,7 +38,7 @@
 		<string name="wipe_btn">Очищення</string>
 		<string name="backup_btn">Бекапи</string>
 		<string name="restore_btn">Відновлення</string>
-		<string name="mount_btn">Монтування</string>
+		<string name="mount_btn">Монтування та MTP</string>
 		<string name="file_manager_btn">Файли</string>
 		<string name="advanced_btn">Розширені</string>
 		<string name="reboot_btn">Перезавантаження</string>

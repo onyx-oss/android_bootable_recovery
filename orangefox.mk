@@ -21,7 +21,7 @@
 LOCAL_CFLAGS += -Wno-unused-parameter -Wno-unused-function -Wno-unused-variable
 
 # Canonical release version
-FOX_INTERNAL_RELEASE := R11.3
+FOX_INTERNAL_RELEASE := R12.0
 LOCAL_CFLAGS += -DFOX_INTERNAL_RELEASE='"$(FOX_INTERNAL_RELEASE)"'
 
 ifneq ($(FOX_MAINTAINER_PATCH_VERSION),)

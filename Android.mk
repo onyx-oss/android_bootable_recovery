@@ -50,6 +50,7 @@ LOCAL_SRC_FILES := \
     startupArgs.cpp \
     twrp-functions.cpp \
     orangefox.cpp \
+    gui/nanosvg.cpp \
     twrpDigestDriver.cpp \
     openrecoveryscript.cpp \
     tarWrite.c \
