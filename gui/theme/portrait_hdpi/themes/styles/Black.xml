@@ -106,7 +106,7 @@
 		<shape name="fs_bg_big" color="#000000" radius="-1" w="130" h="130" />
 
 		<image name="folder_icon" filename="SVG/Icons/folder.svg" retainaspect="1" scale="3.25" tint="#FFFFFF"/>
-		<image name="folder_icon_small" filename="SVG/Icons/folder.svg"  retainaspect="1" scale="3.25" tint="%ffffffffff%"/>
+		<image name="folder_icon_small" filename="SVG/Icons/folder.svg"  retainaspect="1" scale="3.25" tint="#FFFFFF"/>
 
 		<image name="up_icon" filename="SVG/Icons/arrow_up.svg" retainaspect="1" scale="3.25" tint="#FFFFFF"/>
 		<image name="up_icon_small" filename="SVG/Icons/arrow_up.svg"  retainaspect="1" scale="3.25" tint="#FFFFFF"/>
