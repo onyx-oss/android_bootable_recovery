@@ -11,7 +11,6 @@
 		<image name="battery15_good" filename="Light/Battery/battery15_good" retainaspect="1"/>
 		<!-- Pie -->
 		<image name="battery_p" filename="Light/Battery/battery_p" retainaspect="1"/>
-		<image name="battery_charge" filename="Light/Battery/battery_charge" retainaspect="1"/>
 		<!-- New -->
 		<image name="battery_android_0" filename="SVG/Icons/battery_android_0.svg" retainaspect="1" scale="2.60" tint="#413327"/>
 		<image name="battery_android_1" filename="SVG/Icons/battery_android_1.svg" retainaspect="1" scale="2.60" tint="#413327"/>

@@ -122,6 +122,5 @@
 		<image name="author_yan" filename="Default/About/author_yan" retainaspect="1"/>
 		<image name="author_jabba" filename="Default/About/author_jabba" retainaspect="1"/>
 		<image name="maintainer_img" filename="Default/About/maintainer" retainaspect="1"/>
-		<image name="maintainer_layer" filename="Default/About/maintainer_layer" retainaspect="1"/>
 	</resources>
 </recovery>
