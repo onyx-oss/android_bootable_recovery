@@ -440,7 +440,7 @@
 			</text>
 
 			<listbox style="group_list">
-				<placement x="0" y="%row3_2a_y%" w="%screen_w%" h="%bl_h6%"/>
+				<placement x="0" y="%row3_2a_y%" w="%screen_w%" h="%bl_h4%"/>
 				<listitem name="{@module_of_set}">
 					<condition var1="fileexists" var2="/FFiles/OF_backup_settings/OF_backup_settings.zip"/>
 					<icon res="archive"/>
@@ -544,7 +544,7 @@
             <text style="caption">
                 <condition var1="fox_vab_device" var2="1"/>
                 <condition var1="fox_support_ksu" var2="1"/>
-                <placement x="%col1_x_caption%" y="%row7_1a_y%"/>
+                <placement x="%gl_text_x%" y="%row7_1a_y%"/>
                 <text>Other root: needs supported kernel</text>
             </text>
 
