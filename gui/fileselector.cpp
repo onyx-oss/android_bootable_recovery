@@ -2,7 +2,7 @@
 	Copyright 2012 bigbiff/Dees_Troy TeamWin
 	This file is part of TWRP/TeamWin Recovery Project.
 
-	Copyright (C) 2018-2025 OrangeFox Recovery Project
+	Copyright (C) 2018-2026 OrangeFox Recovery Project
 	This file is part of the OrangeFox Recovery Project.
 
 	TWRP is free software: you can redistribute it and/or modify
@@ -489,8 +489,10 @@ void GUIFileSelector::RenderItem(size_t itemindex, int yPos, bool selected)
 		}
 	} else {
 		text = mFileList.at(fileindex).fileName;
-		if (allowDouble && doubleLine == 1)
-			secondLine = TWFunc::ConvertTime(mFileList.at(fileindex).lastModified) + " · " + to_string(mFileList.at(fileindex).fileSize / 1048576) + gui_parse_text("{@mbyte}");
+		if (allowDouble && doubleLine == 1) {
+			secondLine = TWFunc::ConvertTime(mFileList.at(fileindex).lastModified) + " · " + to_string(mFileList.at(fileindex).fileSize / 1024) + gui_parse_text("{@kbyte}");
+//			secondLine = TWFunc::ConvertTime(mFileList.at(fileindex).lastModified) + " · " + to_string(mFileList.at(fileindex).fileSize / 1048576) + gui_parse_text("{@mbyte}");
+		}
 		if (mSelListEnabled) {
 			std::string list = DataManager::GetStrValue("of_batch_files");
 			// list.find(text + "/") != string::npos

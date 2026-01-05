@@ -1120,6 +1120,7 @@
 		<string name="backup_quick_info2">after tapping "Quick Backup" button</string>
 		<string name="mbyte">MB</string>
 		<string name="mbytesec">MB/s</string>
+		<string name="kbyte"> KB</string>
 		<string name="backup_av_files">File</string>
 		<string name="backup_av_img">Image</string>
 		<string name="backup_exp_size">Expected size</string>
