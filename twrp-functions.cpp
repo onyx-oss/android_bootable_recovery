@@ -4690,7 +4690,7 @@ bool TWFunc::To_Skip_OrangeFox_Process(void)
 string TWFunc::ConvertTime(time_t time)
 {
   char buff[32];
-  strftime(buff, 32, "%y/%m/%d %H:%M", localtime(&time));
+  strftime(buff, sizeof(buff), "%d %b %Y | %H:%M", localtime(&time));
   return buff;
 }
 
