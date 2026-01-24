@@ -15,7 +15,7 @@
 				<action function="set">bslots_show=%auto_show_btns%</action>
 			</action-->
 			
-			<listbox style="group_list">
+			<listbox style="group_list_flat">
 				<condition var1="tw_busy" op="!=" var2="1"/>
 				<background color="%power_bg%"/>
 				<highlight color="%power_hl%"/>
@@ -54,7 +54,7 @@
 				<text>{@slot_show}</text>
 			</text>
 
-			<listbox style="group_list">
+			<listbox style="group_list_flat">
 				<condition var1="tw_has_boot_slots" var2="1"/>
 				<condition var1="tw_busy" op="!=" var2="1"/>
 				<background color="%power_bg%"/>
