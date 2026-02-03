@@ -2829,13 +2829,14 @@ void TWFunc::OrangeFox_Startup(void)
     {
       std::string balance = TWFunc::Get_Balanced_Governor();
       DataManager::SetValue(FOX_GOVERNOR_STABLE, balance);
+
       for (i = 0; i < 9; i++)
-    {
-      std::string k = to_string(i);
-      a = cpu_one + k + cpu_two;
-      if (TWFunc::Path_Exists(a))
-        TWFunc::write_to_file(a, balance);
-    }
+	{
+	  std::string k = to_string(i);
+	  a = cpu_one + k + cpu_two;
+	  if (TWFunc::Path_Exists(a))
+	    TWFunc::write_to_file(a, balance);
+	}
     }
   //string info = TWFunc::System_Property_Get("ro.build.display.id");
   string info = GetInstalledRom();
