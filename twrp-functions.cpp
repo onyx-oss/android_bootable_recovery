@@ -347,13 +347,10 @@ void TWFunc::Run_Before_Reboot(void)
 
     // logs & stuff
     string Logs_Dir = Fox_Logs_Dir;
-    bool use_data_recovery = (TWFunc::Fox_Property_Get("of_decryption_failed") == "true");
-#ifdef FOX_USE_DATA_RECOVERY_FOR_SETTINGS
-       use_data_recovery = true;
-#endif
+    bool failed_decryption = (TWFunc::Fox_Property_Get("of_decryption_failed") == "true");
 #if defined(FOX_USE_DATA_RECOVERY_FOR_SETTINGS) || !defined(FOX_MISCELLANEOUS_ROOT_DIRECTORY)
     // check whether decryption failed, and, if so, store the lastrecovery log under /data/recovery/
-    if (use_data_recovery) {
+    if (failed_decryption) {
     	Logs_Dir = TW_STORAGE_PATH;
     	Logs_Dir += "/Fox/logs";
     }
@@ -375,13 +372,26 @@ void TWFunc::Run_Before_Reboot(void)
 
     copy_file("/tmp/recovery.log", Logs_Dir + "/lastrecoverylog.log", 0644);
 
-#if defined(OF_DONT_KEEP_LOG_HISTORY) || defined(FOX_USE_DATA_RECOVERY_FOR_SETTINGS) // don't backup historic logs
+// don't backup historic logs
+#ifdef OF_DONT_KEEP_LOG_HISTORY
 	return;
 #endif
 
     // if decryption failed, don't backup historic logs
-    if (use_data_recovery) {
-    	return;
+    if (failed_decryption) {
+	#ifdef FOX_MISCELLANEOUS_ROOT_DIRECTORY
+	std::string tmp1 = FOX_MISCELLANEOUS_ROOT_DIRECTORY;
+	if (tmp1.find("/sdcard/") != string::npos) {
+		// if we're trying to write to /sdcard with decryption failure, bail out
+		return;
+	}
+	#endif
+
+	#ifdef FOX_USE_DATA_RECOVERY_FOR_SETTINGS
+		// we aren't writing to /sdcard, so continue
+	#else
+		return;
+	#endif
     }
 
     // proceed
