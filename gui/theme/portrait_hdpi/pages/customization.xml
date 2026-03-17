@@ -1929,10 +1929,24 @@
 					#Navbar
 					if [[ '%update_navbar%' = '1' ]]; then
 						if [ ! -d "%fox_navbar_path%" ]; then mkdir -p "%fox_navbar_path%"; fi;
+						navbar_disable_add='%navbar_disable_add_tmp%';
+						if [ -z "${navbar_disable_add}" ]; then
+							echo "E: navbar_disable_add_tmp is empty; aborting navbar regeneration." >> /tmp/recovery.log;
+							exit 1;
+						fi;
+						if ! screen_h=$(expr %screen_original_h% + "${navbar_disable_add}"); then
+							echo "E: Failed to compute navbar screen_h; aborting navbar regeneration." >> /tmp/recovery.log;
+							exit 1;
+						fi;
+						if [ -z "${screen_h}" ]; then
+							echo "E: Computed navbar screen_h is empty; aborting navbar regeneration." >> /tmp/recovery.log;
+							exit 1;
+						fi;
 						cat "/twres/themes/sed/navbar.xml" | sed -e "
 						s/#NAVBAR_DISABLE#/%navbar_disable_tmp%/g;
+						s/#NAVBAR_DISABLE_ADD#/${navbar_disable_add}/g;
 						s/#RGE#/%real_gestures_enable_tmp%/g;
-						s/#SCREEN_H#/$(expr %screen_original_h% + %navbar_disable_add_tmp%)/g
+						s/#SCREEN_H#/${screen_h}/g
 						" > %fox_navbar_path%/navbar.xml;
 					fi;
 				
