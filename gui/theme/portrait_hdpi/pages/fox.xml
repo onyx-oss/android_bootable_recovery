@@ -255,7 +255,7 @@
 				<listitem name="Set screen size to 1920">
 					<condition var1="screen_original_h" op="!=" var2="1920"/>
 					<action function="ftls">
-						[ ! -d "%fox_navbar_path%" ] &amp;&amp; mkdir -p "%fox_navbar_path%"
+						if [ ! -d "%fox_navbar_path%" ]; then mkdir -p -m 0777 "%fox_navbar_path%"; chcon -R u:object_r:media_rw_data_file:s0 "%fox_navbar_path%"; chown -R media_rw:media_rw "%fox_navbar_path%"; fi;
 						cat "/twres/themes/sed/navbar.xml" | sed -e "s/#NAVBAR_DISABLE#/0/g;
 						s/#SCREEN_H#/1920/g" > %fox_navbar_path%/navbar.xml;
 					</action>
@@ -263,7 +263,7 @@
 				</listitem>
 				<listitem name="Set screen size to %screen_original_h%">
 					<action function="ftls">
-						[ ! -d "%fox_navbar_path%" ] &amp;&amp; mkdir -p "%fox_navbar_path%"
+						if [ ! -d "%fox_navbar_path%" ]; then mkdir -p -m 0777 "%fox_navbar_path%"; chcon -R u:object_r:media_rw_data_file:s0 "%fox_navbar_path%"; chown -R media_rw:media_rw "%fox_navbar_path%"; fi;
 						cat "/twres/themes/sed/navbar.xml" | sed -e "s/#NAVBAR_DISABLE#/0/g;
 						s/#SCREEN_H#/%screen_original_h%/g" > %fox_navbar_path%/navbar.xml;
 					</action>
@@ -271,7 +271,7 @@
 				</listitem>
 				<listitem name="Set screen size to %screen_original_h% + 96">
 					<action function="ftls">
-						[ ! -d "%fox_navbar_path%" ] &amp;&amp; mkdir -p "%fox_navbar_path%"
+						if [ ! -d "%fox_navbar_path%" ]; then mkdir -p -m 0777 "%fox_navbar_path%"; chcon -R u:object_r:media_rw_data_file:s0 "%fox_navbar_path%"; chown -R media_rw:media_rw "%fox_navbar_path%"; fi;
 						cat "/twres/themes/sed/navbar.xml" | sed -e "s/#NAVBAR_DISABLE#/0/g;
 						s/#SCREEN_H#/$(expr %screen_original_h% + 96)/g" > %fox_navbar_path%/navbar.xml;
 					</action>
