@@ -49,6 +49,7 @@
 #include <android-base/properties.h>
 #include <thread>
 #include <android-base/chrono_utils.h>
+#include <private/android_filesystem_config.h>
 
 #include "twrp-functions.hpp"
 #include "orangefox.hpp"
@@ -356,7 +357,7 @@ void TWFunc::Run_Before_Reboot(void)
     }
 #endif
     if (!Path_Exists(Logs_Dir)) {
-	  TWFunc::Recursive_Mkdir(Logs_Dir, false);
+	  TWFunc::Create_Dir_Recursive(Fox_Logs_Dir, 0777, AID_MEDIA_RW, AID_MEDIA_RW);
     }
 
     //[f/d] release info json for app
@@ -370,7 +371,12 @@ void TWFunc::Run_Before_Reboot(void)
                   "\",\"variant\":\"" + FOX_VARIANT                                        +
                "\",\"release_id\":\"" + TWFunc::System_Property_Get("ro.build.id")         + "\"}");
 
-    copy_file("/tmp/recovery.log", Logs_Dir + "/lastrecoverylog.log", 0644);
+    copy_file("/tmp/recovery.log", Logs_Dir + "/lastrecoverylog.log", 0777);
+
+// set permissions and selinux contexts on reboot
+#ifdef OF_UPDATE_PERMISSIONS_ON_REBOOT
+    TWFunc::update_permissions_on_reboot();
+#endif
 
 // don't backup historic logs
 #ifdef OF_DONT_KEEP_LOG_HISTORY
@@ -408,11 +414,12 @@ void TWFunc::Run_Before_Reboot(void)
      }
 
    log_file = Logs_Dir + log_file;
-   copy_file("/tmp/recovery.log", log_file, 0644);
+   copy_file("/tmp/recovery.log", log_file, 0777);
    if (Path_Exists(Fox_Bin_Dir + "/pigz"))
      {
         string cmd = Fox_Bin_Dir + "/pigz -K --best " + log_file;
         Exec_Cmd (cmd);
+        TWFunc::set_media_rw_permissions(log_file + ".zip");
      }
 }
 
@@ -1039,7 +1046,7 @@ void TWFunc::Update_Log_File(void) {
 
 	if (!TWFunc::Path_Exists(recoveryDir)) {
 		LOGINFO("Recreating %s folder.\n", recoveryDir.c_str());
-		if (!Create_Dir_Recursive(recoveryDir,  S_IRWXU | S_IRWXG | S_IWGRP | S_IXGRP, 0, 0)) {
+		if (!Create_Dir_Recursive(recoveryDir,  S_IRWXU | S_IRWXG | S_IWGRP | S_IXGRP, AID_MEDIA_RW, AID_MEDIA_RW)) {
 			LOGINFO("Unable to create %s folder.\n", recoveryDir.c_str());
 		}
 	}
@@ -2054,6 +2061,9 @@ bool TWFunc::Create_Dir_Recursive(const std::string & path, mode_t mode,
 	{
 	  if (mkdir(cur_path.c_str(), mode) < 0)
 	    return false;
+	  if (uid == AID_MEDIA_RW && gid == AID_MEDIA_RW) {
+		setfilecon(cur_path.c_str(), "u:object_r:media_rw_data_file:s0");
+	  }
 	  chown(cur_path.c_str(), uid, gid);
 	}
     }
@@ -2873,7 +2883,7 @@ void TWFunc::OrangeFox_Startup(void)
 	{
 	  if (!Path_Exists(Fox_Home))
 	    {
-	      if (!Create_Dir_Recursive(Fox_Home,  S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH, 0, 0))
+	      if (!Create_Dir_Recursive(Fox_Home,  S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH, AID_MEDIA_RW, AID_MEDIA_RW))
 		  LOGINFO("Error making %s directory: %s\n", Fox_Home.c_str(), strerror(errno));
 	    }         
 	  if (Path_Exists(Fox_Home))
@@ -2890,13 +2900,13 @@ void TWFunc::OrangeFox_Startup(void)
 
   if (!Path_Exists(Fox_Settings_Path))
     {
-      if (!Create_Dir_Recursive(Fox_Settings_Path,  S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH, 0, 0))
+      if (!Create_Dir_Recursive(Fox_Settings_Path,  S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH, AID_MEDIA_RW, AID_MEDIA_RW))
         LOGINFO("Error making %s directory: %s\n", Fox_Settings_Path.c_str(), strerror(errno));
     }
 
   if (!Path_Exists(Fox_Logs_Dir))
       {
-	  TWFunc::Recursive_Mkdir(Fox_Logs_Dir, false);
+	  TWFunc::Create_Dir_Recursive(Fox_Logs_Dir, 0777, AID_MEDIA_RW, AID_MEDIA_RW);
       }
 
   TWFunc::Fresh_Fox_Install();
@@ -2923,7 +2933,7 @@ void TWFunc::copy_kernel_log(string curr_storage)
   Exec_Cmd(dmesgCmd, result);
   write_to_file(dmesgDst, result);
   gui_msg(Msg("copy_kernel_log=Copied kernel log to {1}") (dmesgDst));
-  tw_set_default_metadata(dmesgDst.c_str());
+  set_media_rw_permissions(dmesgDst.c_str());
 }
 
 void TWFunc::copy_logcat(string curr_storage)
@@ -2935,7 +2945,7 @@ void TWFunc::copy_logcat(string curr_storage)
   Exec_Cmd(logcatCmd, result);
   write_to_file(logcatDst, result);
   gui_msg(Msg("copy_logcat=Copied logcat to {1}") (logcatDst));
-  tw_set_default_metadata(logcatDst.c_str());
+  set_media_rw_permissions(logcatDst.c_str());
 }
 
 void TWFunc::create_fingerprint_file(string file_path, string fingerprint)
@@ -5150,5 +5160,22 @@ bool TWFunc::IsRecoveryOverwritten(bool only_update) {
 
 	LOGINFO("%s: The checksums do not match for %s\n", __func__, target_partition->Get_Mount_Point().c_str());
 	return true;
+}
+
+void TWFunc::set_media_rw_permissions(const string pathname) {
+	if (Path_Exists(pathname)) {
+		setfilecon(pathname.c_str(), "u:object_r:media_rw_data_file:s0");
+		chmod(pathname.c_str(), 0777);
+		chown(pathname.c_str(), AID_MEDIA_RW, AID_MEDIA_RW);
+	}
+}
+
+void TWFunc::update_permissions_on_reboot() {
+	TWFunc::set_media_rw_permissions(Fox_Settings_Path);
+	TWFunc::set_media_rw_permissions(FOX_NAVBAR_PATH);
+	TWFunc::set_media_rw_permissions(FOX_NAVBAR_PATH + "/navbar.xml");
+	TWFunc::set_media_rw_permissions(FOX_THEME_PATH);
+	TWFunc::set_media_rw_permissions(FOX_THEME_PATH + "/accent.xml");
+	TWFunc::set_media_rw_permissions(FOX_THEME_PATH + "/style.xml");
 }
 //

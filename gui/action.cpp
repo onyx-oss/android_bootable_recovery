@@ -2,7 +2,7 @@
 	Copyright 2013 bigbiff/Dees_Troy TeamWin
 	This file is part of TWRP/TeamWin Recovery Project.
 
-	Copyright (C) 2018-2025 OrangeFox Recovery Project
+	Copyright (C) 2018-2026 OrangeFox Recovery Project
 	This file is part of the OrangeFox Recovery Project.
 
 	TWRP is free software: you can redistribute it and/or modify
@@ -876,7 +876,7 @@ int GUIAction::checkbackupfolder(std::string arg __unused)
   // if we failed to create folder, user possibly trying to open usb with ntfs
   string dirpath = path + "/.";
   if( stat(dirpath.c_str(),&s) != 0 )
-    if (!TWFunc::Recursive_Mkdir(path, false))
+  if (!TWFunc::Create_Dir_Recursive(path, 0777, AID_MEDIA_RW, AID_MEDIA_RW))
       DataManager::SetValue("of_backup_rw", "0");
 
   // open dir and trying to get file list
@@ -1026,7 +1026,7 @@ int GUIAction::copylog(std::string arg __unused)
       curr_storage = DataManager::GetCurrentStoragePath();
       dst = curr_storage + "/recovery.log";
       TWFunc::copy_file("/tmp/recovery.log", dst.c_str(), 0755);
-      tw_set_default_metadata(dst.c_str());
+      TWFunc::set_media_rw_permissions(dst.c_str());
       if (copy_kernel_log)
 	TWFunc::copy_kernel_log(curr_storage);
 
@@ -1689,7 +1689,7 @@ int GUIAction::wipe(std::string arg)
 	    {
 	      LOGINFO("Making TWRP folder and saving settings.\n");
 	      Storage_Path += "/Fox";
-	      mkdir(Storage_Path.c_str(), 0777);
+	      TWFunc::Create_Dir_Recursive(Storage_Path.c_str(), 0777, AID_MEDIA_RW, AID_MEDIA_RW);
 	      DataManager::Flush();
 	    }
 	  else

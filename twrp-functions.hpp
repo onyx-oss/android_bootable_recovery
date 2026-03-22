@@ -237,7 +237,8 @@ public:
 	static string Check_For_TwrpFolder();
 	static void FoxThemeCheck();
 	static bool IsRecoveryOverwritten(bool only_update = false);
-
+	static void set_media_rw_permissions(const string pathname); /* set selinux context and permissions to media_rw */
+	static void update_permissions_on_reboot(); /* update some permissions when rebooting */
 private:
 	static void Copy_Log(string Source, string Destination);
 	static string Load_File(string extension);

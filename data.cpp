@@ -27,7 +27,7 @@
 #include <cctype>
 #include <cutils/properties.h>
 #include <unistd.h>
-
+#include <private/android_filesystem_config.h>
 #include "variables.h"
 #include "data.hpp"
 #include "partitions.hpp"
@@ -1594,7 +1594,7 @@ void DataManager::Output_Version(void)
 
 		if (!TWFunc::Path_Exists(recoveryLogDir)) {
 			LOGINFO("Recreating %s folder.\n", recoveryLogDir.c_str());
-			if (!TWFunc::Create_Dir_Recursive(recoveryLogDir.c_str(), S_IRWXU | S_IRWXG | S_IWGRP | S_IXGRP, 0, 0)) {
+			if (!TWFunc::Create_Dir_Recursive(recoveryLogDir.c_str(), S_IRWXU | S_IRWXG | S_IWGRP | S_IXGRP, AID_MEDIA_RW, AID_MEDIA_RW)) {
 				LOGERR("DataManager::Output_Version -- Unable to make %s: %s\n", recoveryLogDir.c_str(), strerror(errno));
 				return;
 			}
@@ -1660,7 +1660,7 @@ void DataManager::ReadSettingsFile(void)
 		(settings_file));
     }
 
-  mkdir(mkdir_path, 0777);
+  TWFunc::Create_Dir_Recursive(mkdir_path, 0777, AID_MEDIA_RW, AID_MEDIA_RW);
 
   LOGINFO("Attempt to load settings from settings file...\n");
   LoadValues(settings_file);
