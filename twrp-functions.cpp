@@ -372,6 +372,9 @@ void TWFunc::Run_Before_Reboot(void)
                "\",\"release_id\":\"" + TWFunc::System_Property_Get("ro.build.id")         + "\"}");
 
     copy_file("/tmp/recovery.log", Logs_Dir + "/lastrecoverylog.log", 0777);
+    TWFunc::set_media_rw_permissions(Logs_Dir);
+    TWFunc::set_media_rw_permissions(Logs_Dir + "/lastrecoverylog.log");
+    TWFunc::set_media_rw_permissions(Logs_Dir + "/releaseinfo.json");
 
 // set permissions and selinux contexts on reboot
 #ifdef OF_UPDATE_PERMISSIONS_ON_REBOOT
@@ -5177,5 +5180,8 @@ void TWFunc::update_permissions_on_reboot() {
 	TWFunc::set_media_rw_permissions(FOX_THEME_PATH);
 	TWFunc::set_media_rw_permissions(FOX_THEME_PATH + "/accent.xml");
 	TWFunc::set_media_rw_permissions(FOX_THEME_PATH + "/style.xml");
+	TWFunc::set_media_rw_permissions("/data/recovery");
+	TWFunc::set_media_rw_permissions(DataManager::GetStrValue(TW_BACKUPS_FOLDER_VAR));
+	sync();
 }
 //
