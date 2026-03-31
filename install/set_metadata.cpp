@@ -80,7 +80,7 @@ int tw_set_default_metadata(const char* filename) {
 	}
 
 	if (selinux_context == NULL) {
-		printf("selinux_context was null, '%s'\n", filename);
+		//printf("selinux_context was null, '%s'\n", filename);
 		ret = -1;
 	} else {
 		if (selinux_context_needs_substitution)
