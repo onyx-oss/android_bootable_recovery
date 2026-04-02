@@ -2065,7 +2065,7 @@ bool TWFunc::Create_Dir_Recursive(const std::string & path, mode_t mode,
 	  if (mkdir(cur_path.c_str(), mode) < 0)
 	    return false;
 	  if (uid == AID_MEDIA_RW && gid == AID_MEDIA_RW) {
-		setfilecon(cur_path.c_str(), "u:object_r:media_rw_data_file:s0");
+		setfilecon(cur_path.c_str(), FOX_MEDIA_RW_DATA_FILE);
 	  }
 	  chown(cur_path.c_str(), uid, gid);
 	}
@@ -5167,7 +5167,7 @@ bool TWFunc::IsRecoveryOverwritten(bool only_update) {
 
 void TWFunc::set_media_rw_permissions(const string pathname) {
 	if (Path_Exists(pathname)) {
-		setfilecon(pathname.c_str(), "u:object_r:media_rw_data_file:s0");
+		setfilecon(pathname.c_str(), FOX_MEDIA_RW_DATA_FILE);
 		chmod(pathname.c_str(), 0777);
 		chown(pathname.c_str(), AID_MEDIA_RW, AID_MEDIA_RW);
 	}

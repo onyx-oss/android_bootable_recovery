@@ -1892,7 +1892,7 @@
 						[ -d "%fox_theme_path%" ] &amp;&amp; rm -rf %fox_theme_path%;
 						[[ '%update_navbar%' = '1' ]] || exit;
 					else
-						if [ ! -d "%fox_theme_path%" ]; then mkdir -p -m 0777 "%fox_theme_path%"; chcon -R u:object_r:media_rw_data_file:s0 "%fox_theme_path%"; chown -R media_rw:media_rw "%fox_theme_path%"; fi;
+						if [ ! -d "%fox_theme_path%" ]; then mkdir -p -m 0777 "%fox_theme_path%"; chcon -R "%fox_media_rw_data_file%" "%fox_theme_path%"; chown -R "%fox_media_rw%" "%fox_theme_path%"; fi;
 					fi;
 
 					#Fonts
@@ -1928,7 +1928,7 @@
 				
 					#Navbar
 					if [[ '%update_navbar%' = '1' ]]; then
-						if [ ! -d "%fox_navbar_path%" ]; then mkdir -p -m 0777 "%fox_navbar_path%"; chcon -R u:object_r:media_rw_data_file:s0 "%fox_navbar_path%"; chown -R media_rw:media_rw "%fox_navbar_path%"; fi;
+						if [ ! -d "%fox_navbar_path%" ]; then mkdir -p -m 0777 "%fox_navbar_path%"; chcon -R "%fox_media_rw_data_file%" "%fox_navbar_path%"; chown -R "%fox_media_rw%" "%fox_navbar_path%"; fi;
 						navbar_disable_add='%navbar_disable_add_tmp%';
 						if [ -z "${navbar_disable_add}" ]; then
 							echo "E: navbar_disable_add_tmp is empty; aborting navbar regeneration." >> /tmp/recovery.log;
@@ -1948,11 +1948,15 @@
 						s/#RGE#/%real_gestures_enable_tmp%/g;
 						s/#SCREEN_H#/${screen_h}/g
 						" > %fox_navbar_path%/navbar.xml;
+						chcon -R "%fox_media_rw_data_file%" "%fox_navbar_path%/navbar.xml";
+						chown -R "%fox_media_rw%" "%fox_navbar_path%/navbar.xml";
 					fi;
 				
 					#Style
 					if [[ '%update_style%' = '1' ]]; then
 						cat "/twres/themes/styles/%theme_style_tmp%.xml" > %fox_theme_path%/style.xml;
+						chcon -R "%fox_media_rw_data_file%" "%fox_theme_path%/style.xml";
+						chown -R "%fox_media_rw%" "%fox_theme_path%/style.xml";
 					fi;
 				
 					#Accent
@@ -1964,6 +1968,8 @@
 							s/#COLOR_LIGHT#/%theme_accent_light_tmp%/g;
 							s/#COLOR_DARK#/%theme_accent_dark_tmp%/g
 							" > %fox_theme_path%/accent.xml;
+							chcon -R "%fox_media_rw_data_file%" "%fox_theme_path%/accent.xml";
+							chown -R "%fox_media_rw%" "%fox_theme_path%/accent.xml";
 						else
 							cat "/twres/themes/sed/accent.xml" | sed -e "
 							s/#ACCENT_NAME#/%theme_accent_tmp%/g;
@@ -1971,6 +1977,8 @@
 							s/#COLOR_LIGHT#/%theme_accent_light_tmp%/g;
 							s/#COLOR_DARK#/%theme_accent_dark_tmp%/g
 							" > %fox_theme_path%/accent.xml;
+							chcon -R "%fox_media_rw_data_file%" "%fox_theme_path%/accent.xml";
+							chown -R "%fox_media_rw%" "%fox_theme_path%/accent.xml";
 						fi;
 					fi;
 				</action>

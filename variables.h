@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 The Android Open Source Project
  *
- * Copyright (C) 2018-2025 OrangeFox Recovery Project
+ * Copyright (C) 2018-2026 OrangeFox Recovery Project
  * This file is part of the OrangeFox Recovery Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -176,7 +176,8 @@ static int Fox_Current_ROM_IsMIUI = 0; // is the currently installed ROM a MIUI 
 #define FOX_RUN_SURVIVAL_BACKUP         "fox_run_survival_backup"
 #define FOX_METADATA_PRE_BUILD          "fox_pre_build"
 #define FOX_ENCRYPTED_DEVICE		"fox_encrypted_device"
-
+#define FOX_MEDIA_RW			"media_rw:media_rw"
+#define FOX_MEDIA_RW_DATA_FILE		"u:object_r:media_rw_data_file:s0"
 //
 #define TW_USE_COMPRESSION_VAR      	"tw_use_compression"
 #define TW_FILENAME                 	"tw_filename"
