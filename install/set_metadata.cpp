@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <android-base/properties.h>
 #include <private/android_filesystem_config.h>
 #include "selinux/selinux.h"
 
@@ -74,9 +75,11 @@ int tw_set_default_metadata(const char* filename) {
 	bool selinux_context_needs_substitution = false;
 	char substitute_context[128];
 
-	if (strstr(filename, "/sdcard/Fox") || strstr(filename, "/data/media/0/Fox") || strstr(filename, "/data/recovery/Fox")
-	 || strstr(filename, "/persist/Fox") || strstr(filename, "/Fox/BACKUPS")) {
-		selinux_context_needs_substitution = true;
+	if (android::base::GetProperty("ro.orangefox.substitute_permissions", "") == "1") {
+		if (strstr(filename, "/sdcard/Fox") || strstr(filename, "/data/media/0/Fox") || strstr(filename, "recovery/Fox")
+		|| strstr(filename, "/persist/Fox") || strstr(filename, "/Fox/BACKUPS")) {
+			selinux_context_needs_substitution = true;
+		}
 	}
 
 	if (selinux_context == NULL) {

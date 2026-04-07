@@ -871,8 +871,8 @@ ifneq ($(FOX_DELETE_INITD_ADDON),0)
     LOCAL_CFLAGS += -DFOX_DELETE_INITD_ADDON
 endif
 
-# update some permissions when rebooting
-ifeq ($(OF_UPDATE_PERMISSIONS_ON_REBOOT),1)
-    LOCAL_CFLAGS += -DOF_UPDATE_PERMISSIONS_ON_REBOOT
+# whether to skip substituting some permissions
+ifeq ($(OF_DONT_SUBSTITUTE_PERMISSIONS),1)
+    LOCAL_CFLAGS += -DOF_DONT_SUBSTITUTE_PERMISSIONS
 endif
 #

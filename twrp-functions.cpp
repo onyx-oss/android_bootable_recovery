@@ -377,9 +377,7 @@ void TWFunc::Run_Before_Reboot(void)
     TWFunc::set_media_rw_permissions(Logs_Dir + "/releaseinfo.json");
 
 // set permissions and selinux contexts on reboot
-#ifdef OF_UPDATE_PERMISSIONS_ON_REBOOT
     TWFunc::update_permissions_on_reboot();
-#endif
 
 // don't backup historic logs
 #ifdef OF_DONT_KEEP_LOG_HISTORY
@@ -5168,12 +5166,12 @@ bool TWFunc::IsRecoveryOverwritten(bool only_update) {
 void TWFunc::set_media_rw_permissions(const string pathname) {
 	if (Path_Exists(pathname)) {
 		setfilecon(pathname.c_str(), FOX_MEDIA_RW_DATA_FILE);
-		chmod(pathname.c_str(), 0777);
 		chown(pathname.c_str(), AID_MEDIA_RW, AID_MEDIA_RW);
 	}
 }
 
 void TWFunc::update_permissions_on_reboot() {
+  if (android::base::GetProperty("ro.orangefox.substitute_permissions", "") == "1") {
 	TWFunc::set_media_rw_permissions(Fox_Settings_Path);
 	TWFunc::set_media_rw_permissions(FOX_NAVBAR_PATH);
 	TWFunc::set_media_rw_permissions(FOX_NAVBAR_PATH + "/navbar.xml");
@@ -5183,5 +5181,6 @@ void TWFunc::update_permissions_on_reboot() {
 	TWFunc::set_media_rw_permissions("/data/recovery");
 	TWFunc::set_media_rw_permissions(DataManager::GetStrValue(TW_BACKUPS_FOLDER_VAR));
 	sync();
+  }
 }
 //
