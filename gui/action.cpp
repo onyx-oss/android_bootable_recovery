@@ -876,7 +876,7 @@ int GUIAction::checkbackupfolder(std::string arg __unused)
   // if we failed to create folder, user possibly trying to open usb with ntfs
   string dirpath = path + "/.";
   if( stat(dirpath.c_str(),&s) != 0 )
-  if (!TWFunc::Create_Dir_Recursive(path, 0777, AID_MEDIA_RW, AID_MEDIA_RW))
+  if (!TWFunc::Create_Dir_Recursive(path, 0775, AID_MEDIA_RW, AID_MEDIA_RW))
       DataManager::SetValue("of_backup_rw", "0");
 
   // open dir and trying to get file list
@@ -1380,6 +1380,8 @@ int GUIAction::screenshotImpl(std::string arg __unused)
 		if (!TWFunc::Create_Dir_Recursive(path, 0775, uid, gid))
 			return 0;
 	}
+	//if (android::base::GetProperty("ro.orangefox.substitute_permissions", "") == "1")
+	//	setfilecon(path, FOX_MEDIA_RW_DATA_FILE);
 
 	tm = time(NULL);
 	path_len = strlen(path);
@@ -1391,6 +1393,8 @@ int GUIAction::screenshotImpl(std::string arg __unused)
 	if (res == 0) {
 		chmod(path, 0666);
 		chown(path, uid, gid);
+		//if (android::base::GetProperty("ro.orangefox.substitute_permissions", "") == "1")
+		//	setfilecon(path, FOX_MEDIA_RW_DATA_FILE);
 
 		gui_msg(Msg("screenshot_saved=Screenshot was saved to {1}")(path));
 
