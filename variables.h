@@ -325,6 +325,9 @@ static int Fox_Current_ROM_IsMIUI = 0; // is the currently installed ROM a MIUI 
 #define MAX_ARCHIVE_SIZE 1610612736LLU
 //#define MAX_ARCHIVE_SIZE 52428800LLU // 50MB split for testing
 
+// define maximum number of archives
+#define MAX_ARCHIVE_COUNT 247
+
 #ifndef CUSTOM_LUN_FILE
 #define CUSTOM_LUN_FILE 	"/config/usb_gadget/g1/functions/mass_storage.0/lun.%d/file"
 #endif
