@@ -875,4 +875,12 @@ endif
 ifeq ($(OF_DONT_SUBSTITUTE_PERMISSIONS),1)
     LOCAL_CFLAGS += -DOF_DONT_SUBSTITUTE_PERMISSIONS
 endif
+
+# whether to format (instead of just wiping) data in response to OpenRecovery "--wipe-data" instructions (virtual A/B only)
+ifeq ($(OF_VAB_ORS_WIPE_DATA_IS_FORMAT),1)
+    ifneq ($(FOX_VIRTUAL_AB_DEVICE),1)
+     $(error Enable 'FOX_VIRTUAL_AB_DEVICE' before you can use 'OF_VAB_ORS_WIPE_DATA_IS_FORMAT')
+    endif
+    LOCAL_CFLAGS += -DOF_VAB_ORS_WIPE_DATA_IS_FORMAT
+endif
 #
