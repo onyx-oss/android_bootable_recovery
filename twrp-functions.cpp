@@ -2682,6 +2682,7 @@ void TWFunc::Welcome_Message(void)
     gui_msg(Msg("fox_release=[Release]   : {1}")(FOX_BUILD));
     gui_msg(Msg("fox_variant=[Variant]   : {1}")(FOX_VARIANT));
     gui_msg(Msg("fox_codebase=[Codebase]  : {1}, {2}")(Fox_Property_Get("ro.build.version.sdk").c_str())(FOX_CURRENT_DEV_STR));
+    gui_print("[Branch]    : %s\n", OF_CURRENT_BRANCH);
 #ifdef FOX_SETTINGS_ROOT_DIRECTORY
     gui_msg(Msg("fox_settings=[Settings]  : {1}")(Fox_Settings_Path.c_str()));
 #endif
