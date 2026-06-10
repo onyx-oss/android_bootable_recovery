@@ -19,6 +19,7 @@
 	<variables>
 		<variable name="of" value="%screen_h%-400"/>
 		<variable name="rec" value="%screen_h%-320"/>
+		<variable name="author" value="%screen_h%-240"/>
 		<variable name="screen_width" value="1080"/>
 		<variable name="screen_height" value="1920"/>
 		<variable name="header_color" value="#000000"/>
@@ -53,6 +54,12 @@
 				<placement x="540" y="%rec%" placement="4"/>
 				<font resource="recovery" color="#ffffff"/>
 				<text>Recovery</text>
+			</text>
+
+			<text style="menu_text">
+				<placement x="540" y="%author%" placement="4"/>
+				<font resource="recovery" color="#ff9800"/>
+				<text>by IRedDragonICY</text>
 			</text>
 		</page>
 	</pages>

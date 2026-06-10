@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<recovery>
+    <pages>
+        <page name="hw_dashboard">
+            <action>
+                <action function="set">nav_panel_id=3</action>
+            </action>
+
+            <!-- Standard Template -->
+            <template name="base"/>
+
+            <!-- Header -->
+            <text style="text_ab_title">
+                <placement x="%center_x%" y="%ab_bc_fox_y%" placement="5"/>
+                <text>Hardware Dashboard</text>
+            </text>
+
+            <!-- Group 1: Processor & Memory -->
+            <text style="caption">
+                <placement x="%col1_x%" y="%row1_1_y%"/>
+                <text>Processor &amp; Memory</text>
+            </text>
+
+            <!-- Row 1: Temp & RAM Free -->
+            <image>
+                <placement x="%col1_x%" y="%row1_2a_y%"/>
+                <image resource="developer_board"/>
+            </image>
+            <text style="text_body1">
+                <placement x="160" y="%row1_2a_y%"/>
+                <text>CPU Temp: %fox_hw_cpu_temp%</text>
+            </text>
+
+            <image>
+                <placement x="540" y="%row1_2a_y%"/>
+                <image resource="sd_card"/>
+            </image>
+            <text style="text_body1">
+                <placement x="652" y="%row1_2a_y%"/>
+                <text>RAM Free: %fox_hw_ram_free%</text>
+            </text>
+
+            <!-- Row 2: Cluster 0 & RAM Used -->
+            <image>
+                <placement x="%col1_x%" y="%row2_1_y%"/>
+                <image resource="developer_board"/>
+            </image>
+            <text style="text_body1">
+                <placement x="160" y="%row2_1_y%"/>
+                <text>Cluster 0: %fox_hw_cpu_freq_0%</text>
+            </text>
+
+            <image>
+                <placement x="540" y="%row2_1_y%"/>
+                <image resource="sd_card"/>
+            </image>
+            <text style="text_body1">
+                <placement x="652" y="%row2_1_y%"/>
+                <text>RAM Used: %fox_hw_ram_used%</text>
+            </text>
+
+            <!-- Row 3: Cluster 1 -->
+            <image>
+                <placement x="%col1_x%" y="%row2_2a_y%"/>
+                <image resource="developer_board"/>
+            </image>
+            <text style="text_body1">
+                <placement x="160" y="%row2_2a_y%"/>
+                <text>Cluster 1: %fox_hw_cpu_freq_1%</text>
+            </text>
+
+            <!-- Row 4: Cluster 2 -->
+            <image>
+                <placement x="%col1_x%" y="%row3_1_y%"/>
+                <image resource="developer_board"/>
+            </image>
+            <text style="text_body1">
+                <placement x="160" y="%row3_1_y%"/>
+                <text>Cluster 2: %fox_hw_cpu_freq_2%</text>
+            </text>
+
+            <!-- Row 5: Cluster 3 -->
+            <image>
+                <placement x="%col1_x%" y="%row3_2a_y%"/>
+                <image resource="developer_board"/>
+            </image>
+            <text style="text_body1">
+                <placement x="160" y="%row3_2a_y%"/>
+                <text>Cluster 3: %fox_hw_cpu_freq_3%</text>
+            </text>
+
+            <!-- Group 2: Graphics & Storage -->
+            <text style="caption">
+                <placement x="%col1_x%" y="%row4_1_y%"/>
+                <text>Graphics &amp; Storage</text>
+            </text>
+
+            <image>
+                <placement x="%col1_x%" y="%row4_2a_y%"/>
+                <image resource="overview"/>
+            </image>
+            <text style="text_body1">
+                <placement x="160" y="%row4_2a_y%"/>
+                <text>GPU Temp: %fox_hw_gpu_temp%</text>
+            </text>
+
+            <image>
+                <placement x="%col1_x%" y="%row5_1_y%"/>
+                <image resource="hard_disk"/>
+            </image>
+            <text style="text_body1">
+                <placement x="160" y="%row5_1_y%"/>
+                <text>%fox_hw_storage_vendor%</text>
+            </text>
+
+            <image>
+                <placement x="%col1_x%" y="%row5_2a_y%"/>
+                <image resource="icon_warning"/>
+            </image>
+            <text style="text_body1">
+                <placement x="160" y="%row5_2a_y%"/>
+                <text>Storage Temp: %fox_hw_ufs_temp%</text>
+            </text>
+
+            <!-- Group 3: Battery -->
+            <text style="caption">
+                <placement x="%col1_x%" y="%row6_1_y%"/>
+                <text>Battery Analytics</text>
+            </text>
+
+            <image>
+                <placement x="%col1_x%" y="%row6_2a_y%"/>
+                <image resource="battery_android_full"/>
+            </image>
+            <text style="text_body1">
+                <placement x="160" y="%row6_2a_y%"/>
+                <text>Status: %tw_battery% pct (%fox_hw_batt_status%)</text>
+            </text>
+
+            <image>
+                <placement x="%col1_x%" y="%row7_1_y%"/>
+                <image resource="done_all"/>
+            </image>
+            <text style="text_body1">
+                <placement x="160" y="%row7_1_y%"/>
+                <text>Health: %fox_hw_batt_health%</text>
+            </text>
+
+            <image>
+                <placement x="%col1_x%" y="%row7_2a_y%"/>
+                <image resource="bolt"/>
+            </image>
+            <text style="text_body1">
+                <placement x="160" y="%row7_2a_y%"/>
+                <text>%fox_hw_batt_temp%  -  %fox_hw_batt_curr%  -  %fox_hw_batt_volt%</text>
+            </text>
+
+            <!-- Navbar -->
+            <action>
+                <touch key="home"/>
+                <action function="page">main</action>
+            </action>
+            <action>
+                <touch key="back"/>
+                <action function="page">advanced</action>
+            </action>
+        </page>
+    </pages>
+</recovery>

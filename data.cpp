@@ -1540,33 +1540,235 @@ int DataManager::GetMagicValue(const string& varName, string& value)
 		GetValue("tw_no_cpu_temp", tw_no_cpu_temp);
 		if (tw_no_cpu_temp == 1) return -1;
 
-		string cpu_temp_file;
+		static string tw_cpu_path = "";
+		static bool tw_path_init = false;
+		if (!tw_path_init) {
+			for (int i=0; i<100; i++) {
+				string tz = "/sys/class/thermal/thermal_zone" + TWFunc::to_string(i);
+				string type;
+				if (TWFunc::read_file(tz + "/type", type) == 0) {
+					if (type.find("cpu_therm") != string::npos || type.find("cpu") != string::npos) {
+						tw_cpu_path = tz + "/temp";
+						break;
+					}
+				}
+			}
+			if (tw_cpu_path.empty()) tw_cpu_path = "/sys/class/thermal/thermal_zone0/temp";
+			tw_path_init = true;
+		}
+
+		string results;
 		static unsigned long convert_temp = 0;
 		static time_t cpuSecCheck = 0;
 		struct timeval curTime;
-		string results;
-
 		gettimeofday(&curTime, NULL);
-		if (curTime.tv_sec > cpuSecCheck)
-		{
-#ifdef TW_CUSTOM_CPU_TEMP_PATH
-			cpu_temp_file = EXPAND(TW_CUSTOM_CPU_TEMP_PATH);
-			if (TWFunc::read_file(cpu_temp_file, results) != 0)
-				return -1;
-#else
-			cpu_temp_file = "/sys/class/thermal/thermal_zone0/temp";
-			if (TWFunc::read_file(cpu_temp_file, results) != 0)
-				return -1;
-#endif
-			convert_temp = strtoul(results.c_str(), NULL, 0) / 1000;
-			if (convert_temp <= 0)
-				convert_temp = strtoul(results.c_str(), NULL, 0);
-			if (convert_temp >= 150)
-				convert_temp = strtoul(results.c_str(), NULL, 0) / 10;
-			cpuSecCheck = curTime.tv_sec + 5;
+		
+		if (curTime.tv_sec > cpuSecCheck) {
+			if (TWFunc::read_file(tw_cpu_path, results) == 0 && !results.empty()) {
+				convert_temp = strtoul(results.c_str(), NULL, 0) / 1000;
+				if (convert_temp >= 150) convert_temp /= 10;
+			}
+			cpuSecCheck = curTime.tv_sec + 2;
 		}
+		
 		value = TWFunc::to_string(convert_temp);
 		return 0;
+	}
+	else if (varName.find("fox_hw_") == 0) {
+		static time_t last_hw_check = 0;
+		struct timeval curTime;
+		gettimeofday(&curTime, NULL);
+		
+		static string cache_cpu_temp = "N/A", cache_gpu_temp = "N/A", cache_ufs_temp = "N/A";
+		static string cache_batt_curr = "N/A", cache_batt_volt = "N/A", cache_batt_temp = "N/A", cache_batt_status = "Unknown";
+		static string cache_cpu_freq = "N/A", cache_cpu_0 = "N/A", cache_cpu_1 = "N/A", cache_cpu_2 = "N/A", cache_cpu_3 = "N/A";
+		static string cache_ram_total = "N/A", cache_ram_used = "N/A", cache_ram_free = "N/A";
+		static string cache_storage_vendor = "Generic UFS";
+		static string cache_batt_health = "Unknown", cache_batt_cycles = "N/A";
+		
+		if (curTime.tv_sec > last_hw_check) {
+			last_hw_check = curTime.tv_sec + 2; // Update every 2 seconds
+			last_hw_check = curTime.tv_sec + 2; // Update every 2 seconds
+
+			char b[64];
+			
+			// Battery Current
+			{
+				string val;
+				if (TWFunc::read_file("/sys/class/power_supply/battery/current_now", val) == 0 && !val.empty()) {
+					long long curr = strtoll(val.c_str(), NULL, 0) / 1000LL;
+					if (curr < 0) curr = -curr;
+					snprintf(b, sizeof(b), "%lld mA", curr);
+					cache_batt_curr = b;
+				}
+			}
+			// Battery Voltage
+			{
+				string val;
+				if (TWFunc::read_file("/sys/class/power_supply/battery/voltage_now", val) == 0 && !val.empty()) {
+					long long volt = strtoll(val.c_str(), NULL, 0) / 1000LL;
+					snprintf(b, sizeof(b), "%lld mV", volt);
+					cache_batt_volt = b;
+				}
+			}
+			// Battery Temp
+			{
+				string val;
+				if (TWFunc::read_file("/sys/class/power_supply/battery/temp", val) == 0 && !val.empty()) {
+					long long temp = strtoll(val.c_str(), NULL, 0);
+					snprintf(b, sizeof(b), "%lld.%lld C", temp / 10LL, temp % 10LL);
+					cache_batt_temp = b;
+				}
+			}
+			// Battery Status
+			{
+				string val;
+				if (TWFunc::read_file("/sys/class/power_supply/battery/status", val) == 0 && !val.empty()) {
+					if (val[val.length()-1] == '\n') val.erase(val.length()-1);
+					cache_batt_status = val;
+				}
+			}
+			// Battery Cycles
+			{
+				string val;
+				if (TWFunc::read_file("/sys/class/power_supply/battery/cycle_count", val) == 0 && !val.empty()) {
+					if (val[val.length()-1] == '\n') val.erase(val.length()-1);
+					cache_batt_cycles = val;
+				}
+			}
+			// Battery Health
+			{
+				string c_full, c_design;
+				if (TWFunc::read_file("/sys/class/power_supply/battery/charge_full", c_full) == 0 &&
+					TWFunc::read_file("/sys/class/power_supply/battery/charge_full_design", c_design) == 0) {
+					long long full = strtoll(c_full.c_str(), NULL, 0);
+					long long design = strtoll(c_design.c_str(), NULL, 0);
+					if (design > 0 && full > 0) {
+						float pct = ((float)full / (float)design) * 100.0f;
+						snprintf(b, sizeof(b), "Good (%.1f%%)", pct);
+						cache_batt_health = b;
+					} else { cache_batt_health = "Unknown"; }
+				} else { cache_batt_health = "Good"; }
+			}
+
+			// Thermal Zones
+			static string cpu_tz, gpu_tz, ufs_tz;
+			static bool tz_init = false;
+			if (!tz_init) {
+				for (int i=0; i<100; i++) {
+					string tz = "/sys/class/thermal/thermal_zone";
+					snprintf(b, sizeof(b), "%d", i);
+					tz += b;
+					string type;
+					if (TWFunc::read_file(tz + "/type", type) == 0) {
+						if (cpu_tz.empty() && (type.find("cpu_therm") != string::npos || type.find("cpu") != string::npos)) cpu_tz = tz + "/temp";
+						if (gpu_tz.empty() && (type.find("gpuss") != string::npos || type.find("gpu") != string::npos)) gpu_tz = tz + "/temp";
+						if (ufs_tz.empty() && (type.find("ufs") != string::npos || type.find("emmc") != string::npos || type.find("sys-therm") != string::npos)) ufs_tz = tz + "/temp";
+					}
+				}
+				if (cpu_tz.empty()) cpu_tz = "/sys/class/thermal/thermal_zone0/temp";
+				tz_init = true;
+			}
+
+			{
+				string val;
+				if (TWFunc::read_file(cpu_tz, val) == 0 && !val.empty()) {
+					snprintf(b, sizeof(b), "%lld C", strtoll(val.c_str(), NULL, 0) / 1000LL);
+					cache_cpu_temp = b;
+				}
+			}
+			{
+				string val;
+				if (!gpu_tz.empty() && TWFunc::read_file(gpu_tz, val) == 0 && !val.empty()) {
+					snprintf(b, sizeof(b), "%lld C", strtoll(val.c_str(), NULL, 0) / 1000LL);
+					cache_gpu_temp = b;
+				} else { cache_gpu_temp = "N/A"; }
+			}
+			{
+				string val;
+				if (!ufs_tz.empty() && TWFunc::read_file(ufs_tz, val) == 0 && !val.empty()) {
+					snprintf(b, sizeof(b), "%lld C", strtoll(val.c_str(), NULL, 0) / 1000LL);
+					cache_ufs_temp = b;
+				} else { cache_ufs_temp = "N/A"; }
+			}
+
+			// CPU Freqs
+			float f0=0, f1=0, f2=0, f3=0;
+			{
+				string val;
+				if (TWFunc::read_file("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq", val) == 0 && !val.empty()) f0 = strtoll(val.c_str(), NULL, 0) / 1000000.0f;
+			}
+			{
+				string val;
+				if (TWFunc::read_file("/sys/devices/system/cpu/cpu2/cpufreq/scaling_cur_freq", val) == 0 && !val.empty()) f1 = strtoll(val.c_str(), NULL, 0) / 1000000.0f;
+			}
+			{
+				string val;
+				if (TWFunc::read_file("/sys/devices/system/cpu/cpu5/cpufreq/scaling_cur_freq", val) == 0 && !val.empty()) f2 = strtoll(val.c_str(), NULL, 0) / 1000000.0f;
+			}
+			{
+				string val;
+				if (TWFunc::read_file("/sys/devices/system/cpu/cpu7/cpufreq/scaling_cur_freq", val) == 0 && !val.empty()) f3 = strtoll(val.c_str(), NULL, 0) / 1000000.0f;
+			}
+			
+			char b0[16], b1[16], b2[16], b3[16];
+			snprintf(b0, sizeof(b0), "%.1f GHz", f0); cache_cpu_0 = b0;
+			snprintf(b1, sizeof(b1), "%.1f GHz", f1); cache_cpu_1 = b1;
+			snprintf(b2, sizeof(b2), "%.1f GHz", f2); cache_cpu_2 = b2;
+			snprintf(b3, sizeof(b3), "%.1f GHz", f3); cache_cpu_3 = b3;
+			
+			snprintf(b, sizeof(b), "%.1f GHz", f0);
+			cache_cpu_freq = b;
+
+			// RAM
+			{
+				string meminfo;
+				if (TWFunc::read_file("/proc/meminfo", meminfo) == 0) {
+					long long total=0, free=0, available=0;
+					size_t pos = meminfo.find("MemTotal:");
+					if (pos != string::npos) total = strtoll(meminfo.c_str() + pos + 9, NULL, 0);
+					pos = meminfo.find("MemFree:");
+					if (pos != string::npos) free = strtoll(meminfo.c_str() + pos + 8, NULL, 0);
+					pos = meminfo.find("MemAvailable:");
+					if (pos != string::npos) available = strtoll(meminfo.c_str() + pos + 13, NULL, 0);
+
+					if (available == 0) available = free;
+					long long used = total - available;
+
+					snprintf(b, sizeof(b), "%.1f GB", total / 1048576.0f); cache_ram_total = b;
+					snprintf(b, sizeof(b), "%.1f GB", used / 1048576.0f); cache_ram_used = b;
+					snprintf(b, sizeof(b), "%.1f GB", available / 1048576.0f); cache_ram_free = b;
+				}
+			}
+
+			// Storage Vendor
+			{
+				string vendor, model;
+				if (TWFunc::read_file("/sys/block/sda/device/vendor", vendor) == 0 && TWFunc::read_file("/sys/block/sda/device/model", model) == 0) {
+					if (vendor[vendor.length()-1] == '\n') vendor.erase(vendor.length()-1);
+					if (model[model.length()-1] == '\n') model.erase(model.length()-1);
+					cache_storage_vendor = vendor + " " + model;
+				} else { cache_storage_vendor = "Generic UFS"; }
+			}
+		}
+		if (varName == "fox_hw_batt_curr") { value = cache_batt_curr; return 0; }
+		if (varName == "fox_hw_batt_volt") { value = cache_batt_volt; return 0; }
+		if (varName == "fox_hw_batt_temp") { value = cache_batt_temp; return 0; }
+		if (varName == "fox_hw_batt_status") { value = cache_batt_status; return 0; }
+		if (varName == "fox_hw_batt_cycles") { value = cache_batt_cycles; return 0; }
+		if (varName == "fox_hw_batt_health") { value = cache_batt_health; return 0; }
+		if (varName == "fox_hw_cpu_temp") { value = cache_cpu_temp; return 0; }
+		if (varName == "fox_hw_gpu_temp") { value = cache_gpu_temp; return 0; }
+		if (varName == "fox_hw_ufs_temp") { value = cache_ufs_temp; return 0; }
+		if (varName == "fox_hw_cpu_freq_0") { value = cache_cpu_0; return 0; }
+		if (varName == "fox_hw_cpu_freq_1") { value = cache_cpu_1; return 0; }
+		if (varName == "fox_hw_cpu_freq_2") { value = cache_cpu_2; return 0; }
+		if (varName == "fox_hw_cpu_freq_3") { value = cache_cpu_3; return 0; }
+		if (varName == "fox_hw_cpu_freq") { value = cache_cpu_freq; return 0; }
+		if (varName == "fox_hw_ram_total") { value = cache_ram_total; return 0; }
+		if (varName == "fox_hw_ram_used") { value = cache_ram_used; return 0; }
+		if (varName == "fox_hw_ram_free") { value = cache_ram_free; return 0; }
+		if (varName == "fox_hw_storage_vendor") { value = cache_storage_vendor; return 0; }
 	}
 	return -1;
 }

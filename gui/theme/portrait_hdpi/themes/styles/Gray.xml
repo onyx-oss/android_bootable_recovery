@@ -163,6 +163,7 @@
 		<image name="addons" filename="SVG/Icons/addons.svg" retainaspect="1" tint="#FFFFFF" scale="3.25"/>
 		<image name="apps_box" filename="SVG/Icons/apps.svg" retainaspect="1" tint="#FFFFFF" scale="3.25"/>
 		<image name="mount_list" filename="SVG/Icons/check_list.svg" retainaspect="1" tint="#FFFFFF" scale="3.25"/>
+		<image name="chip" filename="SVG/Icons/chip.svg" retainaspect="1" tint="#FFFFFF" scale="3.25"/>
 		<image name="other" filename="SVG/Icons/other.svg" retainaspect="1" tint="#FFFFFF" scale="3.25"/>
 		<image name="partitions" filename="SVG/Icons/partitions.svg" retainaspect="1" tint="#FFFFFF" scale="3.25"/>
 		<image name="repartition" filename="SVG/Icons/repartition.svg" retainaspect="1" tint="#FFFFFF" scale="3.25"/>

@@ -42,12 +42,16 @@
 
 			<listbox style="group_list">
 				<placement x="0" y="%row5_1_y%" w="%screen_w%" h="%adv_additions_h%"/>
+				<listitem name="Hardware Dashboard">
+					<icon res="developer_board"/>
+					<action function="page">hw_dashboard</action>
+				</listitem>
 				<listitem name="{@reflash_twrp}">
-					<icon res="wrench"/>
 					<condition var1="fox_branch" op="&gt;=" var2="11"/>
 					<condition var1="tw_has_boot_slots" var2="1"/>
 					<condition var1="tw_has_repack_tools" var2="1"/>
 					<condition var1="fox_disable_reflash_current" op="!=" var2="1"/>
+					<icon res="wrench"/>
 					<action function="set">tw_repack_kernel=0</action>
 					<action function="set">tw_back=advanced</action>
 					<action function="set">tw_action=reflashtwrp</action>
