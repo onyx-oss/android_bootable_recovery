@@ -199,6 +199,16 @@ static int Run_Update_Binary(const char *path, int* wipe_cache, zip_type ztype) 
 	if (pid == 0) {
 		close(pipe_fd[0]);
 		execve(chr_args[0], const_cast<char**>(chr_args), environ);
+		
+		// If we get ENOEXEC (Exec format error) OR ENOENT (No such file or directory) despite the file existing,
+		// it means it's a 32-bit binary on a 64-bit-only kernel (missing 32-bit linker).
+		// Fall back to the native 64-bit '/system/bin/updater'!
+		if ((errno == ENOEXEC || errno == ENOENT) && TWFunc::Path_Exists(chr_args[0]) && TWFunc::Path_Exists("/system/bin/updater")) {
+				printf("I:Exec format error or missing linker for '%s', falling back to 64-bit '/system/bin/updater'...\n", chr_args[0]);
+				chr_args[0] = "/system/bin/updater";
+				execve(chr_args[0], const_cast<char**>(chr_args), environ);
+		}
+		
 		printf("E:Can't execute '%s': %s\n", chr_args[0], strerror(errno));
 		_exit(-1);
 	}
