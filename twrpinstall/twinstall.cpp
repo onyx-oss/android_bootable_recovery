@@ -261,6 +261,14 @@ static int Run_Update_Binary(const char *path, int* wipe_cache, zip_type ztype) 
 			// Do nothing, not supported by TWRP
 		} else if (strcmp(command, "log") == 0) {
 			printf("%s\n", strtok(NULL, "\n"));
+		} else if (strcmp(command, "-") == 0) {
+			// Workaround for DFE-NEO scripts printing "\n- message"
+			char* display_value = strtok(NULL, "\n");
+			if (display_value) {
+				gui_print("-%s\n", display_value);
+			} else {
+				gui_print("-\n");
+			}
 		} else {
 			LOGERR("unknown command [%s]\n", command);
 		}

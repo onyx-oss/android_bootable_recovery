@@ -141,6 +141,12 @@
 			<font resource="Secondary" color="%text%"/>
 			<image resource="btn_raised"/>
 		</style>
+		
+		<style name="btn_raised_s">
+			<highlight color="%highlight_color%"/>
+			<font resource="Secondary" color="%text%"/>
+			<image resource="btn_raised_s"/>
+		</style>
 
 		<style name="btn_raised_warn">
 			<highlight color="%highlight_color%"/>
@@ -152,6 +158,12 @@
 			<highlight color="%highlight_color%"/>
 			<font resource="Secondary" color="%text_hl_btn%"/>
 			<image resource="btn_raised_hl"/>
+		</style>
+		
+		<style name="btn_raised_s_hl">
+			<highlight color="%highlight_color%"/>
+			<font resource="Secondary" color="%text_hl_btn%"/>
+			<image resource="btn_raised_s_hl"/>
 		</style>
 
 		<style name="btn_flat_qw">

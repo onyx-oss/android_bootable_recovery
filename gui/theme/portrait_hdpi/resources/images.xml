@@ -13,7 +13,9 @@
 
         <!-- TODO: create variables -->
 		<shape name="btn_raised" w="%btn_w%" h="%btn_h%" radius="-1" color="%neutral_light%" />
+		<shape name="btn_raised_s" w="320" h="%btn_h%" radius="-1" color="%neutral_light%" />
 		<shape name="btn_raised_hl" w="%btn_w%" h="%btn_h%" radius="-1" color="%accent%" />
+		<shape name="btn_raised_s_hl" w="320" h="%btn_h%" radius="-1" color="%accent%" />
 		<shape name="btn_flat_qw" w="%btn_half_w%" h="%btn_h%" radius="-1" stroke="3" color="#666666"/>
 
 		<shape name="btn_raised_warn" w="%btn_w%" h="%btn_h%" radius="-1" color="#E51C23" />
