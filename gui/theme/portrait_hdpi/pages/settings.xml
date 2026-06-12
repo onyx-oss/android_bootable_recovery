@@ -274,6 +274,18 @@
 				<listitem name="{@fox_boot_fastcharge}">
 					<data variable="fox_boot_fastcharge_check"/>
 				</listitem>
+				<listitem name="{@fox_boot_bypass_charge}">
+					<condition var1="fox_bypass_charge_check" op="!=" var2="0"/>
+					<icon res="checkbox_true"/>
+					<action function="set">fox_bypass_charge_check=0</action>
+					<action function="cmd">echo 0 > /sys/devices/platform/soc/soc:smart_charge/smart_night</action>
+				</listitem>
+				<listitem name="{@fox_boot_bypass_charge}">
+					<condition var1="fox_bypass_charge_check" var2="0"/>
+					<icon res="checkbox_false"/>
+					<action function="set">fox_bypass_charge_check=1</action>
+					<action function="cmd">echo 1 > /sys/devices/platform/soc/soc:smart_charge/smart_night</action>
+				</listitem>
 				<listitem name="{@files_auto_open}">
 					<data variable="fm_auto_open"/>
 				</listitem>

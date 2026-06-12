@@ -1056,6 +1056,7 @@
 		<string name="fox_led_title">LED Settings</string>
 		<string name="fox_use_green_led">Use green led color</string>
 		<string name="fox_boot_fastcharge">Force fast charge</string>
+		<string name="fox_boot_bypass_charge">Enable bypass charging (Prevent Heat)</string>
 
 		<!-- OTA -->
 		<string name="fox_ota_msg_ready">You are ready to receive updates!</string>

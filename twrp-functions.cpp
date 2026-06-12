@@ -2766,6 +2766,7 @@ void TWFunc::OrangeFox_Startup(void)
   std::string t2w = "/sys/android_touch/doubletap2wake";
   std::string fsync = "/sys/module/sync/parameters/fsync_enabled";
   std::string fast_charge = "/sys/kernel/fast_charge/force_fast_charge";
+  std::string bypass_charge = "/sys/devices/platform/soc/soc:smart_charge/smart_night";
   std::string performance = "performance";
   std::string powersave = "powersave";
   std::string interactive = "interactive";
@@ -2820,6 +2821,14 @@ void TWFunc::OrangeFox_Startup(void)
       if (TWFunc::Path_Exists(fast_charge))
 	{
 	  TWFunc::write_to_file(fast_charge, enable);
+	}
+    }
+
+  if (DataManager::GetIntValue(FOX_BYPASS_CHARGE_CHECK) == 1)
+    {
+      if (TWFunc::Path_Exists(bypass_charge))
+	{
+	  TWFunc::write_to_file(bypass_charge, enable);
 	}
     }
 

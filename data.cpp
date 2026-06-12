@@ -1217,6 +1217,7 @@ void DataManager::SetDefaultValues()
   mPersist.SetValue(FOX_MAIN_SURVIVAL_TRIGGER, "META-INF/com/miui/miui_update");
 
   mPersist.SetValue(FOX_FORCE_FAST_CHARGE_CHECK, "0");
+  mPersist.SetValue(FOX_BYPASS_CHARGE_CHECK, "0");
   mPersist.SetValue(FOX_POWERSAVE_CHECK, "0");
   mPersist.SetValue(FOX_PERFORMANCE_CHECK, "0");
   mPersist.SetValue(FOX_BALANCE_CHECK, "1");
