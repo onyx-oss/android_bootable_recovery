@@ -12,6 +12,7 @@
 
 			<action>
 				<condition var1="rmm_type" var2="magisk"/>
+				<action function="set">rmm_path=/data/adb/modules</action>
 				<action function="set">rmm_name=Magisk Manager</action>
 				<action function="set">rmm_type_ver={@mm_ver}</action>
 				<action function="ftls">
@@ -29,6 +30,7 @@
 
 			<action>
 				<condition var1="rmm_type" var2="ap"/>
+				<action function="set">rmm_path=/data/adb/modules</action>
 				<action function="set">rmm_type_path=%ap_path%</action>
 				<action function="set">rmm_name={@ap_modules}</action>
 				<action function="set">rmm_type_ver={@ap_ver}</action>
@@ -38,6 +40,7 @@
 
 			<action>
 				<condition var1="rmm_type" var2="ksu"/>
+				<action function="set">rmm_path=/data/adb/modules</action>
 				<action function="set">rmm_type_path=%ksu_path%</action>
 				<action function="set">rmm_name={@ksu_modules}</action>
 				<action function="set">rmm_type_ver={@ksu_ver}</action>
@@ -81,7 +84,11 @@
 							${found}0;
 							exit 1;
 						fi
-					elif [ -n "$(find "%rmm_path%" -mindepth 1 -maxdepth 1 -type d)" ]; then
+					elif [ -n "$(find "%rmm_type_path%/modules" -mindepth 1 -maxdepth 1 -type d 2>/dev/null)" ]; then
+						twrp xset rmm_path="%rmm_type_path%/modules"
+						${found}1;
+						${image_mounted}0;
+					elif [ -n "$(find "%rmm_path%" -mindepth 1 -maxdepth 1 -type d 2>/dev/null)" ]; then
 						${found}1;
 						${image_mounted}0;
 					else
