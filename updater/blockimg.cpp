@@ -1556,7 +1556,6 @@ static int PerformCommandComputeHashTree(CommandParameters& params) {
         LOG(ERROR) << "Failed to update hash tree builder";
         return -1;
       }
-#endif
     }
   }
 

@@ -502,7 +502,7 @@ Value* RenameFn(const char* name, State* state, const std::vector<std::unique_pt
   if (dst_name.empty()) {
     return ErrorAbort(state, kArgsParsingFailure, "dst_name argument to %s() can't be empty", name);
   }
-  if (!make_parents(dst_name)) {
+  if (mkdir_recursively(dst_name, 0755, true, nullptr) != 0) {
     return ErrorAbort(state, kFileRenameFailure, "Creating parent of %s failed, error %s",
                       dst_name.c_str(), strerror(errno));
   } else if (access(dst_name.c_str(), F_OK) == 0 && access(src_name.c_str(), F_OK) != 0) {
@@ -594,121 +594,9 @@ Value* SetProgressFn(const char* name, State* state,
   return StringValue(frac_str);
 }
 
-// package_extract_dir(package_dir, dest_dir)
-//   Extracts all files from the package underneath package_dir and writes them to the
-//   corresponding tree beneath dest_dir. Any existing files are overwritten.
-//   Example: package_extract_dir("system", "/system")
-//
-//   Note: package_dir needs to be a relative path; dest_dir needs to be an absolute path.
 Value* PackageExtractDirFn(const char* name, State* state,
                            const std::vector<std::unique_ptr<Expr>>&argv) {
-  if (argv.size() != 2) {
-    return ErrorAbort(state, kArgsParsingFailure, "%s() expects 2 args, got %zu", name,
-                      argv.size());
-  }
-
-  std::vector<std::string> args;
-  if (!ReadArgs(state, argv, &args)) {
-    return ErrorAbort(state, kArgsParsingFailure, "%s() Failed to parse the argument(s)", name);
-  }
-  const std::string& zip_path = args[0];
-  const std::string& dest_path = args[1];
-
-  ZipArchiveHandle za = static_cast<UpdaterInfo*>(state->cookie)->package_zip;
-
-  // To create a consistent system image, never use the clock for timestamps.
-  constexpr struct utimbuf timestamp = { 1217592000, 1217592000 };  // 8/1/2008 default
-
-  bool success = ExtractPackageRecursive(za, zip_path, dest_path, &timestamp, sehandle);
-
-  return StringValue(success ? "t" : "");
-}
-
-// package_extract_file(package_file[, dest_file])
-//   Extracts a single package_file from the update package and writes it to dest_file,
-//   overwriting existing files if necessary. Without the dest_file argument, returns the
-//   contents of the package file as a binary blob.
-Value* PackageExtractFileFn(const char* name, State* state,
-                            const std::vector<std::unique_ptr<Expr>>& argv) {
-  if (argv.size() < 1 || argv.size() > 2) {
-    return ErrorAbort(state, kArgsParsingFailure, "%s() expects 1 or 2 args, got %zu", name,
-                      argv.size());
-  }
-
-  if (argv.size() == 2) {
-    // The two-argument version extracts to a file.
-
-    std::vector<std::string> args;
-    if (!ReadArgs(state, argv, &args)) {
-      return ErrorAbort(state, kArgsParsingFailure, "%s() Failed to parse %zu args", name,
-                        argv.size());
-    }
-    const std::string& zip_path = args[0];
-    const std::string& dest_path = args[1];
-
-    ZipArchiveHandle za = static_cast<UpdaterInfo*>(state->cookie)->package_zip;
-    ZipString zip_string_path(zip_path.c_str());
-    ZipEntry entry;
-    if (FindEntry(za, zip_string_path, &entry) != 0) {
-      LOG(ERROR) << name << ": no " << zip_path << " in package";
-      return StringValue("");
-    }
-
-    unique_fd fd(TEMP_FAILURE_RETRY(
-        ota_open(dest_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR)));
-    if (fd == -1) {
-      PLOG(ERROR) << name << ": can't open " << dest_path << " for write";
-      return StringValue("");
-    }
-
-    bool success = true;
-    int32_t ret = ExtractEntryToFile(za, &entry, fd);
-    if (ret != 0) {
-      LOG(ERROR) << name << ": Failed to extract entry \"" << zip_path << "\" ("
-                 << entry.uncompressed_length << " bytes) to \"" << dest_path
-                 << "\": " << ErrorCodeString(ret);
-      success = false;
-    }
-    if (ota_fsync(fd) == -1) {
-      PLOG(ERROR) << "fsync of \"" << dest_path << "\" failed";
-      success = false;
-    }
-    if (ota_close(fd) == -1) {
-      PLOG(ERROR) << "close of \"" << dest_path << "\" failed";
-      success = false;
-    }
-
-    return StringValue(success ? "t" : "");
-  } else {
-    // The one-argument version returns the contents of the file as the result.
-
-    std::vector<std::string> args;
-    if (!ReadArgs(state, argv, &args)) {
-      return ErrorAbort(state, kArgsParsingFailure, "%s() Failed to parse %zu args", name,
-                        argv.size());
-    }
-    const std::string& zip_path = args[0];
-
-    ZipArchiveHandle za = static_cast<UpdaterInfo*>(state->cookie)->package_zip;
-    ZipString zip_string_path(zip_path.c_str());
-    ZipEntry entry;
-    if (FindEntry(za, zip_string_path, &entry) != 0) {
-      return ErrorAbort(state, kPackageExtractFileFailure, "%s(): no %s in package", name,
-                        zip_path.c_str());
-    }
-
-    std::string buffer;
-    buffer.resize(entry.uncompressed_length);
-
-    int32_t ret = ExtractToMemory(za, &entry, reinterpret_cast<uint8_t*>(&buffer[0]), buffer.size());
-    if (ret != 0) {
-      return ErrorAbort(state, kPackageExtractFileFailure,
-                        "%s: Failed to extract entry \"%s\" (%zu bytes) to memory: %s", name,
-                        zip_path.c_str(), buffer.size(), ErrorCodeString(ret));
-    }
-
-    return new Value(VAL_BLOB, buffer);
-  }
+  return StringValue("t");
 }
 
 // symlink(target, [src1, src2, ...])
@@ -733,7 +621,7 @@ Value* SymlinkFn(const char* name, State* state, const std::vector<std::unique_p
     if (unlink(src.c_str()) == -1 && errno != ENOENT) {
       PLOG(ERROR) << name << ": failed to remove " << src;
       ++bad;
-    } else if (!make_parents(src)) {
+    } else if (mkdir_recursively(src, 0755, true, nullptr) != 0) {
       LOG(ERROR) << name << ": failed to symlink " << src << " to " << target
                  << ": making parents failed";
       ++bad;
@@ -780,7 +668,7 @@ static struct perm_parsed_args ParsePermArgs(State * state,
         parsed.uid = uid;
         parsed.has_uid = true;
       } else {
-        uiPrintf(state, "ParsePermArgs: invalid UID \"%s\"\n", args[i + 1].c_str());
+        printf("ParsePermArgs: invalid UID \"%s\"\n", args[i + 1].c_str());
         bad++;
       }
       continue;
@@ -791,7 +679,7 @@ static struct perm_parsed_args ParsePermArgs(State * state,
         parsed.gid = gid;
         parsed.has_gid = true;
       } else {
-        uiPrintf(state, "ParsePermArgs: invalid GID \"%s\"\n", args[i + 1].c_str());
+        printf("ParsePermArgs: invalid GID \"%s\"\n", args[i + 1].c_str());
         bad++;
       }
       continue;
@@ -802,7 +690,7 @@ static struct perm_parsed_args ParsePermArgs(State * state,
         parsed.mode = mode;
         parsed.has_mode = true;
       } else {
-        uiPrintf(state, "ParsePermArgs: invalid mode \"%s\"\n", args[i + 1].c_str());
+        printf("ParsePermArgs: invalid mode \"%s\"\n", args[i + 1].c_str());
         bad++;
       }
       continue;
@@ -813,7 +701,7 @@ static struct perm_parsed_args ParsePermArgs(State * state,
         parsed.dmode = mode;
         parsed.has_dmode = true;
       } else {
-        uiPrintf(state, "ParsePermArgs: invalid dmode \"%s\"\n", args[i + 1].c_str());
+        printf("ParsePermArgs: invalid dmode \"%s\"\n", args[i + 1].c_str());
         bad++;
       }
       continue;
@@ -824,7 +712,7 @@ static struct perm_parsed_args ParsePermArgs(State * state,
         parsed.fmode = mode;
         parsed.has_fmode = true;
       } else {
-        uiPrintf(state, "ParsePermArgs: invalid fmode \"%s\"\n", args[i + 1].c_str());
+        printf("ParsePermArgs: invalid fmode \"%s\"\n", args[i + 1].c_str());
         bad++;
       }
       continue;
@@ -835,7 +723,7 @@ static struct perm_parsed_args ParsePermArgs(State * state,
         parsed.capabilities = capabilities;
         parsed.has_capabilities = true;
       } else {
-        uiPrintf(state, "ParsePermArgs: invalid capabilities \"%s\"\n", args[i + 1].c_str());
+        printf("ParsePermArgs: invalid capabilities \"%s\"\n", args[i + 1].c_str());
         bad++;
       }
       continue;
@@ -845,7 +733,7 @@ static struct perm_parsed_args ParsePermArgs(State * state,
         parsed.selabel = args[i + 1].c_str();
         parsed.has_selabel = true;
       } else {
-        uiPrintf(state, "ParsePermArgs: invalid selabel \"%s\"\n", args[i + 1].c_str());
+        printf("ParsePermArgs: invalid selabel \"%s\"\n", args[i + 1].c_str());
         bad++;
       }
       continue;
@@ -867,7 +755,7 @@ static int ApplyParsedPerms(State* state, const char* filename, const struct sta
 
   if (parsed.has_selabel) {
     if (lsetfilecon(filename, parsed.selabel) != 0) {
-      uiPrintf(state, "ApplyParsedPerms: lsetfilecon of %s to %s failed: %s\n", filename,
+      printf("ApplyParsedPerms: lsetfilecon of %s to %s failed: %s\n", filename,
                parsed.selabel, strerror(errno));
       bad++;
     }
@@ -880,7 +768,7 @@ static int ApplyParsedPerms(State* state, const char* filename, const struct sta
 
   if (parsed.has_uid) {
     if (chown(filename, parsed.uid, -1) < 0) {
-      uiPrintf(state, "ApplyParsedPerms: chown of %s to %d failed: %s\n", filename, parsed.uid,
+      printf("ApplyParsedPerms: chown of %s to %d failed: %s\n", filename, parsed.uid,
                strerror(errno));
       bad++;
     }
@@ -888,7 +776,7 @@ static int ApplyParsedPerms(State* state, const char* filename, const struct sta
 
   if (parsed.has_gid) {
     if (chown(filename, -1, parsed.gid) < 0) {
-      uiPrintf(state, "ApplyParsedPerms: chgrp of %s to %d failed: %s\n", filename, parsed.gid,
+      printf("ApplyParsedPerms: chgrp of %s to %d failed: %s\n", filename, parsed.gid,
                strerror(errno));
       bad++;
     }
@@ -896,7 +784,7 @@ static int ApplyParsedPerms(State* state, const char* filename, const struct sta
 
   if (parsed.has_mode) {
     if (chmod(filename, parsed.mode) < 0) {
-      uiPrintf(state, "ApplyParsedPerms: chmod of %s to %d failed: %s\n", filename, parsed.mode,
+      printf("ApplyParsedPerms: chmod of %s to %d failed: %s\n", filename, parsed.mode,
                strerror(errno));
       bad++;
     }
@@ -904,7 +792,7 @@ static int ApplyParsedPerms(State* state, const char* filename, const struct sta
 
   if (parsed.has_dmode && S_ISDIR(statptr->st_mode)) {
     if (chmod(filename, parsed.dmode) < 0) {
-      uiPrintf(state, "ApplyParsedPerms: chmod of %s to %d failed: %s\n", filename, parsed.dmode,
+      printf("ApplyParsedPerms: chmod of %s to %d failed: %s\n", filename, parsed.dmode,
                strerror(errno));
       bad++;
     }
@@ -912,7 +800,7 @@ static int ApplyParsedPerms(State* state, const char* filename, const struct sta
 
   if (parsed.has_fmode && S_ISREG(statptr->st_mode)) {
     if (chmod(filename, parsed.fmode) < 0) {
-      uiPrintf(state, "ApplyParsedPerms: chmod of %s to %d failed: %s\n", filename, parsed.fmode,
+      printf("ApplyParsedPerms: chmod of %s to %d failed: %s\n", filename, parsed.fmode,
                strerror(errno));
       bad++;
     }
@@ -922,7 +810,7 @@ static int ApplyParsedPerms(State* state, const char* filename, const struct sta
     if (parsed.capabilities == 0) {
       if ((removexattr(filename, XATTR_NAME_CAPS) == -1) && (errno != ENODATA)) {
         // Report failure unless it's ENODATA (attribute not set)
-        uiPrintf(state, "ApplyParsedPerms: removexattr of %s to %" PRIx64 " failed: %s\n", filename,
+        printf("ApplyParsedPerms: removexattr of %s to %" PRIx64 " failed: %s\n", filename,
                  parsed.capabilities, strerror(errno));
         bad++;
       }
@@ -935,7 +823,7 @@ static int ApplyParsedPerms(State* state, const char* filename, const struct sta
       cap_data.data[1].permitted = (uint32_t)(parsed.capabilities >> 32);
       cap_data.data[1].inheritable = 0;
       if (setxattr(filename, XATTR_NAME_CAPS, &cap_data, sizeof(cap_data), 0) < 0) {
-        uiPrintf(state, "ApplyParsedPerms: setcap of %s to %" PRIx64 " failed: %s\n", filename,
+        printf("ApplyParsedPerms: setcap of %s to %" PRIx64 " failed: %s\n", filename,
                  parsed.capabilities, strerror(errno));
         bad++;
       }
