@@ -61,24 +61,7 @@
 					<action function="set">tw_slider_text={@swipe_to_confirm}</action>
 					<action function="page">confirm_action</action>
 				</listitem>
-				<listitem name="Magisk Manager">
-					<condition var1="fileexists" var2="%magisk_path%"/>
-					<condition var1="no_magisk" op="!=" var2="1"/>
-					<icon res="wand_shine"/>
-					<action function="set">rmm_found=-1</action>
-					<action function="set">rmm_type=magisk</action>
-					<action function="page">modules_mount</action>
-				</listitem>
-				<listitem name="Magisk Manager">
-					<condition var1="fileexists" op="!=" var2="%magisk_path%"/>
-					<condition var1="fileexists" op="!=" var2="%ap_path%"/>
-					<condition var1="fileexists" op="!=" var2="%ksu_path%"/>
-					<condition var1="no_magisk" op="!=" var2="1"/>
-					<icon res="wand_shine"/>
-					<action function="set">rmm_found=-1</action>
-					<action function="set">rmm_type=magisk</action>
-					<action function="page">modules_mount</action>
-				</listitem>
+
 				<listitem name="{@ap_modules}">
 					<condition var1="fileexists" var2="%ap_path%"/>
 					<icon res="android"/>
@@ -294,32 +277,15 @@
 			</action>
 		</page>
 
-		<page name="mod_magisk">
+		<page name="mod_dfe">
 			<action>
 				<action function="queueclear"/>
-				<action function="set">fox_m_author=topjohnwu</action>
-				<action function="set">fox_m_name={@module_install} Magisk %magisk_ver%</action>
-				<action function="set">tw_file=%fox_magisk_zip_installer%</action>
-				<action function="set">tw_filename=%fox_magisk_path%/%fox_magisk_zip_installer%</action>
+				<action function="set">fox_m_author=LeeGarChat &amp; IRedDragonICY</action>
+				<action function="set">fox_m_name={@module_install} DFE</action>
+				<action function="set">tw_file=DFE.zip</action>
+				<action function="set">tw_filename=/FFiles/DFE.zip</action>
 				<action function="set">tw_filecheck=%tw_filename%</action>
-				<action function="set">tw_zip_location=%fox_magisk_path%</action>
-				<action function="set">fox_install_built_in_zip=1</action>
-				<action function="queuezip"/>
-				<action function="set">tw_notexistpage=fox_modules_confirm</action>
-				<action function="set">tw_existpage=fox_modules_confirm</action>
-				<action function="page">filecheck</action>
-			</action>
-		</page>
-
-		<page name="mod_unmagisk">
-			<action>
-				<action function="queueclear"/>
-				<action function="set">fox_m_author=topjohnwu</action>
-				<action function="set">fox_m_name={@module_uninstall} Magisk</action>
-				<action function="set">tw_file=%fox_magisk_uninstaller%</action>
-				<action function="set">tw_filename=%fox_magisk_path%/%fox_magisk_uninstaller%</action>
-				<action function="set">tw_filecheck=%tw_filename%</action>
-				<action function="set">tw_zip_location=%fox_magisk_path%</action>
+				<action function="set">tw_zip_location=/FFiles</action>
 				<action function="set">fox_install_built_in_zip=1</action>
 				<action function="queuezip"/>
 				<action function="set">tw_notexistpage=fox_modules_confirm</action>
@@ -423,18 +389,15 @@
 
 			<text style="caption">
 				<placement x="%gl_text_x%" y="%row1_1_y%"/>
-				<text>Magisk</text>
+				<text>Disable Force Encryption</text>
 			</text>
 
 			<listbox style="group_list">
-				<placement x="0" y="%row1_2_y%" w="%screen_w%" h="%bl_h2%"/>
-				<listitem name="{@module_install} Magisk %magisk_ver%">
+				<placement x="0" y="%row1_2_y%" w="%screen_w%" h="%bl_h1%"/>
+				<listitem name="{@module_install} DFE">
+					<condition var1="fileexists" var2="/FFiles/DFE.zip"/>
 					<icon res="archive"/>
-					<action function="page">mod_magisk</action>
-				</listitem>
-				<listitem name="{@module_uninstall} Magisk">
-					<icon res="archive"/>
-					<action function="page">mod_unmagisk</action>
+					<action function="page">mod_dfe</action>
 				</listitem>
 			</listbox>
 

@@ -61,6 +61,9 @@
 		<string name="file">File</string>
 		<string name="zip_sig_chk">ZIP signature verification</string>
 		<string name="inject_twrp_chk">Inject OrangeFox after install</string>
+		<string name="auto_dfe_chk">Auto flash DFE after install</string>
+		<string name="auto_dfe">Auto flashing DFE...</string>
+		<string name="auto_dfe_missing">Auto DFE is enabled but DFE zip is missing!</string>
 		<string name="install_reboot_chk">Reboot after installation is complete</string>
 		<string name="options_hdr">Options</string>
 		<string name="zip_queue">Queue</string>

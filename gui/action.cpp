@@ -1538,6 +1538,18 @@ int GUIAction::flash(std::string arg)
    DataManager::Leds(true);
 
    reinject_after_flash(); // ** redundant code
+   
+   if (DataManager::GetIntValue(TW_AUTO_DFE) == 1) {
+       string dfe_path = "/FFiles/DFE.zip";
+       if (TWFunc::Path_Exists(dfe_path)) {
+           gui_msg("auto_dfe=Auto flashing DFE...");
+           int wipe_cache_dfe = 0;
+           flash_zip(dfe_path, &wipe_cache_dfe);
+       } else {
+           gui_msg("auto_dfe_missing=Auto DFE is enabled but DFE zip is missing!");
+       }
+   }
+
    PartitionManager.Update_System_Details();
    operation_end(ret_val);
    DataManager::SetValue(FOX_INSTALL_PREBUILT_ZIP, 0); // if we have installed an internal zip, turn off the flag

@@ -60,6 +60,9 @@
 		<string name="file">Berkas</string>
 		<string name="zip_sig_chk">Tanda Verifikasi ZIP</string>
 		<string name="inject_twrp_chk">Suntikkan OrangeFox setelah memasang</string>
+		<string name="auto_dfe_chk">Otomatis pasang DFE setelah instalasi</string>
+		<string name="auto_dfe">Mengeksekusi auto DFE...</string>
+		<string name="auto_dfe_missing">Auto DFE diaktifkan tetapi file zip DFE tidak ditemukan!</string>
 		<string name="install_reboot_chk">Mulai ulang setelah pemasangan selesai</string>
 		<string name="options_hdr">Opsi</string>
 		<string name="zip_queue">Urutan</string>

@@ -1082,6 +1082,7 @@ void DataManager::SetDefaultValues()
 #else
   mConst.SetValue(TW_HAS_INJECTTWRP, "0");
 #endif
+  mPersist.SetValue(TW_AUTO_DFE, "0");
 #ifdef TW_HAS_DOWNLOAD_MODE
   printf("TW_HAS_DOWNLOAD_MODE := true\n");
   mConst.SetValue(TW_DOWNLOAD_MODE, "1");
