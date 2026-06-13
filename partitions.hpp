@@ -141,6 +141,7 @@ public:
 
 public:
 	bool Is_Mounted();                                                        // Checks mount to see if the partition is currently mounted
+	bool Is_Mounted_Via_Proc();                                               // Checks /proc/mounts as fallback for FUSE-based mounts (ntfs-3g)
 	bool Is_File_System_Writable();                                           // Checks if the root directory of the file system can be written to
 	bool Mount(bool Display_Error);                                           // Mounts the partition if it is not mounted
 	bool UnMount(bool Display_Error, int flags = 0);                          // Unmounts the partition if it is mounted

@@ -1605,7 +1605,12 @@ bool TWPartition::Is_Mounted(void) {
 
 	// Check to see if the mount point directory exists
 	test_path = Mount_Point + "/.";
-	if (stat(test_path.c_str(), &st1) != 0)  return false;
+	if (stat(test_path.c_str(), &st1) != 0) {
+		// stat() may fail for FUSE mounts (e.g. ntfs-3g) that haven't
+		// fully initialized their fuse_loop() yet, or due to SELinux
+		// context issues with fuseblk. Fall back to /proc/mounts.
+		return Is_Mounted_Via_Proc();
+	}
 
 	// Check to see if the directory above the mount point exists
 	test_path = Mount_Point + "/../.";
@@ -1615,6 +1620,24 @@ bool TWPartition::Is_Mounted(void) {
 	int ret = (st1.st_dev != st2.st_dev) ? true : false;
 
 	return ret;
+}
+
+bool TWPartition::Is_Mounted_Via_Proc(void) {
+	// Check /proc/mounts as a secondary indicator for FUSE-based mounts.
+	// ntfs-3g uses FUSE and may not be stat()-able immediately after
+	// the daemon forks, but it will appear in /proc/mounts.
+	FILE* fp = fopen("/proc/mounts", "r");
+	if (!fp) return false;
+	char line[512];
+	string search = " " + Mount_Point + " ";
+	while (fgets(line, sizeof(line), fp)) {
+		if (strstr(line, search.c_str())) {
+			fclose(fp);
+			return true;
+		}
+	}
+	fclose(fp);
+	return false;
 }
 
 bool TWPartition::Is_File_System_Writable(void) {
@@ -1674,6 +1697,20 @@ bool TWPartition::Mount(bool Display_Error) {
 		LOGINFO("cmd: '%s'\n", cmd.c_str());
 
 		if (TWFunc::Exec_Cmd(cmd) == 0) {
+			// ntfs-3g forks a FUSE daemon into background via daemon().
+			// The parent process exits immediately with code 0, but the
+			// child daemon may not have fully initialized fuse_loop() yet
+			// -- especially for large NTFS volumes (>500GB) where reading
+			// $Bitmap and MFT records takes extra time.
+			// We must wait for the FUSE mount to become accessible.
+			for (int i = 0; i < 20; i++) {
+				if (Is_Mounted())
+					break;
+				usleep(100000); // 100ms per retry, max 2 seconds total
+			}
+			if (!Is_Mounted()) {
+				LOGINFO("ntfs-3g FUSE daemon did not initialize in time for '%s'\n", Mount_Point.c_str());
+			}
 			goto exit;
 		} else {
 			LOGINFO("ntfs-3g failed to mount, trying regular mount method.\n");
