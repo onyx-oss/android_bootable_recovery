@@ -365,6 +365,10 @@ static void process_recovery_mode(twrpAdbBuFifo* adb_bu_fifo, bool skip_decrypti
 	DataManager::RestorePasswordBackup();
 #endif
 
+	// Sync timezone from Android OS — must run AFTER .foxs settings are loaded
+	// so our timezone isn't overridden by stale .foxs values
+	TWFunc::Sync_Timezone_From_OS();
+
 #ifndef TW_OEM_BUILD
 	// Disable flashing of stock recovery
 	TWFunc::Disable_Stock_Recovery_Replace();

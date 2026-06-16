@@ -2026,6 +2026,137 @@ void TWFunc::Fixup_Time_On_Boot(const string & time_paths)
 }
 #endif // ifdef OF_USE_LEGACY_TIME_FIXUP
 
+// ─── Sync_Timezone_From_OS ──────────────────────────────────────────────────
+// Reads timezone from the Android OS's persistent properties and applies it
+// to recovery. Works purely from recovery side — no ROM modifications needed.
+//
+// Strategy:
+//   1. Try /persist/.recovery_tz (cached from a previous boot)
+//   2. If /data is mounted, extract timezone from persistent_properties
+//   3. Cache the result to /persist/.recovery_tz for next boot
+//   4. Apply the timezone to the recovery environment
+//
+void TWFunc::Sync_Timezone_From_OS(void) {
+	static bool synced = false;
+	if (synced)
+		return;
+
+	std::string olson_tz;
+	std::string posix_tz;
+	const std::string cache_file = "/persist/.recovery_tz";
+	const std::string props_file = "/data/property/persistent_properties";
+
+	// Step 1: Try to read from Android's persistent_properties (if /data is decrypted)
+	if (TWFunc::Path_Exists(props_file)) {
+		// persistent_properties is a protobuf file, but Olson timezone names
+		// (e.g., "Asia/Jakarta") appear as plain ASCII strings.
+		// Use popen+strings to extract them safely.
+		std::string cmd = "strings " + props_file + " 2>/dev/null | grep -E '^(Asia|America|Europe|Africa|Pacific|Australia|Indian|Atlantic)/[A-Za-z_/]+$' | head -1";
+		FILE *pipe = popen(cmd.c_str(), "r");
+		if (pipe) {
+			char buf[128];
+			if (fgets(buf, sizeof(buf), pipe)) {
+				olson_tz = buf;
+				// Trim trailing newline
+				while (!olson_tz.empty() && (olson_tz.back() == '\n' || olson_tz.back() == '\r'))
+					olson_tz.pop_back();
+			}
+			pclose(pipe);
+		}
+
+		if (!olson_tz.empty()) {
+			LOGINFO("Sync_Timezone: Found OS timezone from properties: %s\n", olson_tz.c_str());
+
+			// Convert Olson → POSIX using the system's zoneinfo database
+			// TZ=<olson> date +%%z gives offset like "+0700"
+			std::string date_cmd = "TZ='" + olson_tz + "' date '+%Z%z' 2>/dev/null";
+			FILE *dpipe = popen(date_cmd.c_str(), "r");
+			if (dpipe) {
+				char dbuf[64];
+				if (fgets(dbuf, sizeof(dbuf), dpipe)) {
+					std::string raw = dbuf;
+					while (!raw.empty() && (raw.back() == '\n' || raw.back() == '\r'))
+						raw.pop_back();
+					// raw is like "WIB+0700" — we need "WIB-7" (POSIX inverts sign)
+					// Parse: abbreviation + offset
+					// Find where the +/- starts
+					size_t sign_pos = raw.find_last_of("+-");
+					if (sign_pos != std::string::npos && sign_pos > 0) {
+						std::string abbr = raw.substr(0, sign_pos);
+						std::string offset_str = raw.substr(sign_pos);
+						// Parse hours from offset like "+0700" or "-0500"
+						int offset_val = 0;
+						if (offset_str.length() >= 3) {
+							int hours = atoi(offset_str.substr(0, 3).c_str());
+							int minutes = 0;
+							if (offset_str.length() >= 5)
+								minutes = atoi(offset_str.substr(3, 2).c_str());
+							offset_val = hours * 100 + (hours >= 0 ? minutes : -minutes);
+						}
+						// POSIX inverts: east of GMT (positive UTC offset) = negative POSIX
+						// "+0700" → -7, "-0500" → 5
+						int posix_hours = -(offset_val / 100);
+						int posix_minutes = abs(offset_val % 100);
+
+						posix_tz = abbr;
+						if (posix_hours >= 0)
+							posix_tz += std::to_string(posix_hours);
+						else
+							posix_tz += std::to_string(posix_hours); // negative sign included
+						if (posix_minutes > 0)
+							posix_tz += ":" + std::to_string(posix_minutes);
+					}
+				}
+				pclose(dpipe);
+			}
+
+			// Cache to /persist for next recovery boot
+			if (!posix_tz.empty()) {
+				// Write both Olson and POSIX to cache
+				std::string cache_content = posix_tz;
+				TWFunc::write_to_file(cache_file, cache_content);
+				LOGINFO("Sync_Timezone: Cached POSIX timezone '%s' (from %s) to %s\n",
+						posix_tz.c_str(), olson_tz.c_str(), cache_file.c_str());
+			}
+		}
+	}
+
+	// Step 2: If we didn't get timezone from /data, try the cached file on /persist
+	if (posix_tz.empty() && TWFunc::Path_Exists(cache_file)) {
+		std::string cached;
+		if (TWFunc::read_file(cache_file, cached) == 0 && !cached.empty()) {
+			// Trim
+			while (!cached.empty() && (cached.back() == '\n' || cached.back() == '\r'))
+				cached.pop_back();
+			if (!cached.empty()) {
+				posix_tz = cached;
+				LOGINFO("Sync_Timezone: Using cached timezone from %s: %s\n",
+						cache_file.c_str(), posix_tz.c_str());
+			}
+		}
+	}
+
+	// Step 3: Apply the timezone if we got one
+	if (!posix_tz.empty()) {
+		// Use persist=1 to ensure the value is saved to .foxs settings file
+		// This prevents .foxs from overriding our timezone on subsequent loads
+		DataManager::SetValue(TW_TIME_ZONE_VAR, posix_tz, 1);
+		DataManager::SetValue(TW_TIME_ZONE_GUISEL, posix_tz, 1);
+		DataManager::SetValue(TW_TIME_ZONE_GUIDST, "0", 1);
+		DataManager::SetValue(TW_TIME_ZONE_GUIOFFSET, "0", 1);
+		setenv("TZ", posix_tz.c_str(), 1);
+		tzset();
+		property_set("persist.sys.timezone", posix_tz.c_str());
+		// Flush to persist .foxs so it won't be overridden on next UI reload
+		DataManager::Flush();
+		LOGINFO("Sync_Timezone: Applied and persisted timezone: %s (date: %s)\n",
+				posix_tz.c_str(), TWFunc::Get_Current_Date().c_str());
+		synced = true;
+	} else {
+		LOGINFO("Sync_Timezone: No OS timezone found, using default.\n");
+	}
+}
+
 std::vector < std::string > TWFunc::Split_String(const std::string & str,
 						 const std::
 						 string & delimiter,
